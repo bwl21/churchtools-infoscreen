@@ -188,12 +188,17 @@ Instanz. Du wählst den Baustein nach der gewünschten Darstellung und Raumauswa
 
 Die **Terminliste** eignet sich für eine allgemeine Kalenderübersicht, insbesondere wenn Ort,
 Kalenderkennzeichnung oder Dienste mit angezeigt werden sollen. **Termine mit Raum** eignet sich,
-wenn die Raumzuordnung schnell erkennbar sein soll und du bestimmte Räume auswählen möchtest.
+wenn Besucher schnell erkennen sollen, welcher Termin in welchem Raum stattfindet – besonders auf
+einem Display im Eingangsbereich des Gemeindezentrums. Dafür kannst du die relevanten Räume auswählen.
 
 Bei beiden Bausteinen bleibt eine Folie mit mehreren Seiten mindestens so lange sichtbar, bis alle
 Seiten einmal gezeigt wurden. Im Designer bleibt die erste Seite stehen.
 
 ## Termine mit Raum
+
+Der Baustein ist vor allem für die **Orientierung von Besuchern** gedacht: Ein Display im Eingangsbereich
+des Gemeindezentrums zeigt die anstehenden Termine und die zugehörigen Räume, damit Besucher ihr Ziel
+schnell finden.
 
 ![Termine mit Raum: Datum und Uhrzeit links, Titel und Untertitel in der Mitte, Räume rechtsbündig](bilder/termine-mit-raum.png)
 

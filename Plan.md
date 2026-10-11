@@ -47,7 +47,9 @@ festgelegt: Die API-Spezifikation wird nicht committet und in der PR-Beschreibun
 Installationspakete gehören ebenfalls nicht zum Quellcode-PR.
 
 **Dokumentation ergänzt (2026-10-11, Rückmeldung des Nutzers):** Die Funktionsübersicht stellt
-„Terminliste“ und „Termine mit Raum“ gegenüber. Der Entwicklerabschnitt der README beschreibt die
+„Terminliste“ und „Termine mit Raum“ gegenüber und nennt die Orientierung von Besuchern auf einem
+Display im Eingangsbereich des Gemeindezentrums als hauptsächlichen Einsatzzweck des neuen Bausteins.
+Der Entwicklerabschnitt der README beschreibt die
 wiederverwendete Lade-, Normalisierungs-, Auswahl- und Seitenberechnungsgrundlage sowie die getrennten
 Ansichten. G58 stellt die Wiederverwendung in den Vordergrund und erhält die Grenze der Prüfung.
 Keine Verhaltensänderung und kein Umbau der Seitentimer.
