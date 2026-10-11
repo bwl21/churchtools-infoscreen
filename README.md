@@ -79,6 +79,12 @@ steht in [`LocalTests.md`](LocalTests.md); die Arbeitsregeln für Mitwirkende un
 [`AGENTS.md`](AGENTS.md). Die Messungen an ChurchTools, auf die sich der Bau stützt, stehen in
 [`Befunde.md`](Befunde.md).
 
+Die verwandten Bausteine „Terminliste“ und „Termine mit Raum“ verwenden dieselbe vorhandene Datenverarbeitung:
+Laden und Normalisieren der Kalendertermine samt bestätigten Raumbuchungen, Kalender-/Zeitraumauswahl sowie
+Zeilenaufteilung und Folienhaltezeit. „Termine mit Raum“ ergänzt einen Filter nach stabilen Raum-IDs und eine
+eigene Darstellung. Zeilenmessung und Seitentimer liegen derzeit in den jeweiligen Ansichten. Der
+[Vergleich der Terminlisten](docs/Funktionen.md#welche-terminliste-passt) beschreibt, wann welcher Baustein passt.
+
 ## Kein Bezug zum Hersteller
 
 Dieses Projekt ist eine unabhängige Entwicklung von Anwendern und steht in keiner Verbindung zur ChurchTools

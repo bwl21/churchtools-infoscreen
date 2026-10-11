@@ -46,6 +46,12 @@ Proxy, externe Anfragen gesperrt. Die PR-Beschreibung mit Anwendertext, Changelo
 festgelegt: Die API-Spezifikation wird nicht committet und in der PR-Beschreibung nicht erwähnt.
 Installationspakete gehören ebenfalls nicht zum Quellcode-PR.
 
+**Dokumentation ergänzt (2026-10-11, Rückmeldung des Nutzers):** Die Funktionsübersicht stellt
+„Terminliste“ und „Termine mit Raum“ gegenüber. Der Entwicklerabschnitt der README beschreibt die
+wiederverwendete Lade-, Normalisierungs-, Auswahl- und Seitenberechnungsgrundlage sowie die getrennten
+Ansichten. G58 stellt die Wiederverwendung in den Vordergrund und erhält die Grenze der Prüfung.
+Keine Verhaltensänderung und kein Umbau der Seitentimer.
+
 ## Auf einen Blick
 
 **Stand 2026-10-10.** Veröffentlicht sind `v0.1.0` bis `v0.19.0`; das Modul läuft im echten ChurchTools der Testinstanz. **Auf der Produktivinstanz ist es seit dem 2026-10-05 installiert** (der erste Versuch scheiterte am Kürzel, Befunde.md G52); **dort läuft `v0.18.1` (seit dem 2026-10-07), die Rechte sind aktualisiert; `v0.19.0` ist veröffentlicht (2026-10-10), aber noch nicht dort – das ZIP geht erst nach bestandenem P4 hinein, danach einmal „Rechte aktualisieren“ (Kategorie `drafts`).** Die Fernseher melden sich über ihre Adresse selbst an (Weg B, Abschnitt D). Das Repository ist seit dem 2026-09-25 öffentlich.

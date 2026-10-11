@@ -168,6 +168,31 @@ Die Profile stehen **untereinander** oder **nebeneinander**, bis zu zwölf je Ba
 Zeile bricht nicht um; ein zu langer Name endet mit „…". Ein QR-Code je Profil gehört nicht dazu – dafür gibt es den
 Baustein „QR-Code".
 
+## Welche Terminliste passt?
+
+**„Terminliste“** und **„Termine mit Raum“** zeigen laufende und kommende Termine aus den gewählten
+öffentlichen Kalendern. Beide bieten einen einstellbaren Zeitraum und verwenden die Zeitzone der
+Instanz. Du wählst den Baustein nach der gewünschten Darstellung und Raumauswahl:
+
+| Eigenschaft | Terminliste | Termine mit Raum |
+| --- | --- | --- |
+| Darstellung | Schlichte Zeilen oder Karten mit Datumskachel und Kalenderkennzeichnung | Datum und Uhrzeit links, Titel und Untertitel in der Mitte, Räume rechtsbündig |
+| Kalender | Auswählbar | Auswählbar |
+| Räume auswählen | Kein Raumfilter; gebuchte Räume lassen sich bei Karten anzeigen | Termine mit bestätigter Raumbuchung werden nach gewählten Räumen gefiltert |
+| Termine ohne Raum | Werden angezeigt | Werden ebenfalls angezeigt; die Raumspalte bleibt leer |
+| Ort und Raum | Bei Karten: ein eingetragener Ort hat Vorrang; andernfalls erscheinen auf Wunsch gebuchte Räume | Eigene Raumspalte; sie zeigt die gewählten gebuchten Räume unabhängig vom eingetragenen Ort |
+| Untertitel und Dienste | Untertitel bei Karten; freigegebene Dienste lassen sich ergänzen | Untertitel unter dem Titel; keine Dienstanzeige |
+| Viele Termine | Mit „Alle Termine, seitenweise“ automatisch auf mehrere Seiten verteilt | Automatisch auf mehrere Seiten verteilt |
+| Fortschritt | Fortschrittsbalken mit Seitennummer | Segmentierte Fortschrittsanzeige |
+| Farben | Schriftfarbe einstellbar; Hintergrund der Folie | „Dunkel auf hell“ oder „Hell auf dunkel“ für den ganzen Baustein |
+
+Die **Terminliste** eignet sich für eine allgemeine Kalenderübersicht, insbesondere wenn Ort,
+Kalenderkennzeichnung oder Dienste mit angezeigt werden sollen. **Termine mit Raum** eignet sich,
+wenn die Raumzuordnung schnell erkennbar sein soll und du bestimmte Räume auswählen möchtest.
+
+Bei beiden Bausteinen bleibt eine Folie mit mehreren Seiten mindestens so lange sichtbar, bis alle
+Seiten einmal gezeigt wurden. Im Designer bleibt die erste Seite stehen.
+
 ## Termine mit Raum
 
 ![Termine mit Raum: Datum und Uhrzeit links, Titel und Untertitel in der Mitte, Räume rechtsbündig](bilder/termine-mit-raum.png)
