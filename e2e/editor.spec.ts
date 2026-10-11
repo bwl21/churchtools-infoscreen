@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { fakePaletteChurch } from './local-church';
 import { addBlock, dragRow, nudgeRow, chooseFont, chosen, choose, customColor, openInspector, openSection, openSlides } from './helpers';
 
 test.use({ viewport: { width: 1440, height: 900 } });
@@ -379,6 +380,7 @@ test.describe('with a finger, in both browsers', () => {
     });
 
     test('"+ Baustein" opens a sheet with every block, and the inspector is its own sheet on request (Plan.md 44, M3, M4; 79, C2)', async ({ page }) => {
+        await fakePaletteChurch(page);
         await page.goto('./');
         await page.getByTestId('open-editor').first().click();
         await expect(page.getByTestId('phone-slides')).toContainText('von 3');
@@ -386,7 +388,7 @@ test.describe('with a finger, in both browsers', () => {
         await page.getByTestId('add-block-menu').click();
         const sheet = page.getByTestId('block-sheet');
         await expect(sheet).toBeVisible();
-        await expect(sheet.locator('[data-testid^="sheet-add-"]')).toHaveCount(17);
+        await expect(sheet.locator('[data-testid^="sheet-add-"]')).toHaveCount(18);
         await sheet.getByTestId('sheet-add-qr').click();
         await expect(sheet).toHaveCount(0);
 
@@ -1603,6 +1605,7 @@ test('a groups block shows a group homepage\'s groups, as a card and as a list (
 });
 
 test('the blocks stand in German alphabetical order in the "+ Baustein" sheet; the old row is gone (Plan.md 47)', async ({ page }) => {
+    await fakePaletteChurch(page);
     await page.goto('./');
     await page.getByTestId('open-editor').first().click();
     await expect(page.getByTestId('slide-item')).toHaveCount(3);
@@ -1614,7 +1617,7 @@ test('the blocks stand in German alphabetical order in the "+ Baustein" sheet; t
     const types = await sheet.locator('[data-testid^="sheet-add-"]').evaluateAll((buttons) =>
         buttons.map((b) => b.getAttribute('data-testid')!.replace('sheet-add-', '')),
     );
-    // Beiträge, Bild, Countdown, Fläche, Galerie, Gemeindekopf, Gruppen, Linie, Nächster Termin, QR-Code, Raumbelegung, Terminliste, Text, Uhr, Video, Webseite
+    // All 18 block types, including Social Media and Termine mit Raum, in German alphabetical order.
     expect(types).toEqual([
         'posts',
         'image',
@@ -1627,6 +1630,8 @@ test('the blocks stand in German alphabetical order in the "+ Baustein" sheet; t
         'next-appointment',
         'qr',
         'rooms',
+        'social',
+        'room-appointments',
         'appointment-list',
         'text',
         'clock',
@@ -2114,6 +2119,7 @@ test('an empty slide says so, and its button opens the same sheet as "+ Baustein
 });
 
 test('the "+ Baustein" sheet describes each block and searches name and sentence (Plan.md 79, C7)', async ({ page }) => {
+    await fakePaletteChurch(page);
     await page.goto('./');
     await page.getByTestId('open-editor').first().click();
     await page.getByTestId('add-block-menu').click();
@@ -2142,7 +2148,7 @@ test('the "+ Baustein" sheet describes each block and searches name and sentence
     await expect(sheet).toHaveCount(0);
     await page.getByTestId('add-block-menu').click();
     await expect(page.getByTestId('block-search')).toHaveValue('');
-    await expect(page.getByTestId('block-sheet').locator('[data-testid^="sheet-add-"]')).toHaveCount(17);
+    await expect(page.getByTestId('block-sheet').locator('[data-testid^="sheet-add-"]')).toHaveCount(18);
 });
 
 test('a new text begins as a heading; the text level sets size and weight in one step (Plan.md 79, C8)', async ({ page }) => {

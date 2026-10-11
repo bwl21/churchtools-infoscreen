@@ -9,6 +9,8 @@
 import type { Block } from '../model/schema';
 
 export function showsAppointmentRooms(block: Block): boolean {
+    // Bookings are needed even without a room choice, to distinguish appointments without rooms.
+    if (block.type === 'room-appointments') return true;
     if (block.type === 'next-appointment') return block.showRooms === true;
     if (block.type === 'appointment-list') return block.showRooms === true && block.layout !== 'rows';
     return false;

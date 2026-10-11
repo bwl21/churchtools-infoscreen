@@ -30,6 +30,8 @@ export function blockSummary(block: Block, lookup: SummaryLookup): string {
             return shorten((block.mediaId && lookup.mediaName(block.mediaId)) || '');
         case 'slideshow':
             return shorten((block.mediaIds[0] && lookup.mediaName(block.mediaIds[0])) || '');
+        case 'room-appointments':
+            return shorten(block.roomIds.map((id) => lookup.roomName(id)).filter(Boolean).join(', '));
         case 'appointment-list':
         case 'next-appointment':
         case 'countdown':

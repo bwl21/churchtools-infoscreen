@@ -22,6 +22,7 @@ const QUICK: Record<BlockType, string[]> = {
     slideshow: ['Bilder hinzufügen', 'Übergang: Überblenden'],
     video: ['Video wählen', 'Ton'],
     clock: ['Darstellung: Uhrzeit', 'Farbe'],
+    'room-appointments': ['Kalender · 1', 'Räume · 0', 'Darstellung: Dunkel auf hell', 'Zeitraum 14 Tage'],
     'appointment-list': ['Kalender · 1', 'Darstellung: Wie im Design', 'Zeitraum 14 Tage', 'Farbe'],
     'next-appointment': ['Kalender · 1', 'Darstellung: Wie im Design', 'Terminbild zeigen', 'Farbe'],
     countdown: ['Kalender · 1', 'Titel des Termins zeigen', 'Farbe'],

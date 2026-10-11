@@ -61,7 +61,7 @@ export function pageInterval(pageSeconds: number, slideSeconds: number, pages: n
 export function slideSeconds(slide: SlideDoc, pages: Readonly<Record<string, number>>): number {
     let seconds = slide.durationSeconds;
     for (const block of slide.blocks) {
-        if (block.type === 'appointment-list' && block.showAll) {
+        if ((block.type === 'appointment-list' && block.showAll) || block.type === 'room-appointments') {
             const count = pages[block.id] ?? 1;
             // One page needs no more time than the slide has.
             if (count > 1) seconds = Math.max(seconds, count * (block.pageSeconds ?? PAGE_SECONDS));

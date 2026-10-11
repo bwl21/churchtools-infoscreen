@@ -8,7 +8,7 @@
 import * as v from 'valibot';
 
 /** Bump `major` only for changes an older player cannot survive. */
-export const SCHEMA_VERSION = { major: 1, minor: 33 } as const;
+export const SCHEMA_VERSION = { major: 1, minor: 34 } as const;
 
 const Id = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 const Px = v.pipe(v.number(), v.finite());
@@ -171,6 +171,18 @@ export const AppointmentListBlock = v.object({
     services: v.optional(v.pipe(v.array(v.pipe(v.number(), v.integer())), v.maxLength(6))),
     /** Since 1.17: calendars whose appointments show no booked rooms though `showRooms` is on (Plan.md, Nächste Schritte 51). Missing = none left out. */
     roomsOffCalendarIds: v.optional(v.array(v.pipe(v.number(), v.integer()))),
+    style: TextStyle,
+});
+
+/** Since 1.34: appointments filtered by booked rooms, with local pages and a light or dark surface. */
+export const RoomAppointmentsBlock = v.object({
+    ...BlockFrame,
+    type: v.literal('room-appointments'),
+    calendarIds: v.pipe(v.array(v.pipe(v.number(), v.integer())), v.minLength(1)),
+    roomIds: v.pipe(v.array(v.pipe(v.number(), v.integer())), v.maxLength(30)),
+    horizonDays: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(366)),
+    pageSeconds: v.optional(v.pipe(v.number(), v.integer(), v.minValue(3), v.maxValue(120)), 10),
+    appearance: v.optional(v.picklist(['light', 'dark']), 'light'),
     style: TextStyle,
 });
 
@@ -428,6 +440,7 @@ export const Block = v.variant('type', [
     ShapeBlock,
     ClockBlock,
     AppointmentListBlock,
+    RoomAppointmentsBlock,
     NextAppointmentBlock,
     ChurchHeaderBlock,
     WebBlock,
@@ -444,7 +457,7 @@ export const Block = v.variant('type', [
 
 /** The calendars whose appointments a block shows or counts down to. */
 export function blockCalendarIds(block: Block): number[] {
-    return block.type === 'appointment-list' || block.type === 'next-appointment' || block.type === 'countdown'
+    return block.type === 'appointment-list' || block.type === 'room-appointments' || block.type === 'next-appointment' || block.type === 'countdown'
         ? block.calendarIds
         : [];
 }

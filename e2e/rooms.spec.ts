@@ -1,7 +1,9 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { blockExternalRequests } from './local-church';
 import { addBlock, choose, expectSlides, nudgeRow, openInspectorOnPhone, openSection } from './helpers';
 
 test.use({ viewport: { width: 1440, height: 900 } });
+test.beforeEach(async ({ page }) => blockExternalRequests(page));
 
 /**
  * The block "Raumbelegung" (Plan.md 46) in demo mode. ChurchTools' answers are made up here: rooms and
@@ -200,7 +202,8 @@ async function newRoomsBlock(page: Page, ownSlide = true): Promise<void> {
 async function newBlock(page: Page, type: string): Promise<void> {
     await page.goto('./');
     await page.getByTestId('open-editor').first().click();
-    await expect(page.getByTestId('slide-item')).toHaveCount(3);
+    // The helper is also used twice within one test, after a first slide was published.
+    await expect(page.getByTestId('slide-item').first()).toBeVisible();
     await page.getByTestId('add-slide').click();
     await addBlock(page, type);
     await expect(page.getByTestId('block-inspector')).toBeVisible();
@@ -576,4 +579,60 @@ test('the cards of the list: date column of one width, place under the date, thr
     await expect(stage(page).getByTestId('list-card').first()).toContainText('Donnerstag, 30. September');
     expect(await titleLeft()).toBeCloseTo(left, 0);
     await page.screenshot({ path: 'test-results/dienste/list-cards-long-date.png' });
+});
+
+
+test('room appointments: calendar and room filters, subtitle, right-aligned room, colours and local pages', async ({ page }) => {
+    const scene = {
+        now: NOW,
+        eventStart: '2026-10-04T08:00:00Z',
+        appointments: [scheduled(19, GOTTESDIENSTE, 'Ohne Raum', '2026-10-04T07:00:00Z'), ...Array.from({ length: 12 }, (_, i) => {
+            const item = scheduled(i + 20, GOTTESDIENSTE, `Termin ${i + 1}`, '2026-10-04T08:00:00Z', { rooms: [1] });
+            return { ...item, appointment: { ...item.appointment, base: { ...item.appointment.base, subtitle: 'Gemeinsam essen' } } };
+        })],
+    };
+    const church = await fakeChurch(page, { bookingRequests: [], appointmentRequests: [], scene });
+    await newBlock(page, 'room-appointments');
+    const preview = stage(page).getByTestId('room-appointments');
+    await expect(preview.getByTestId('room-appointment-row')).toHaveCount(1);
+    await expect(preview.getByTestId('room-appointment-row')).toContainText('Ohne Raum');
+    await expect(preview.getByTestId('room-appointment-room')).toHaveText('');
+    await page.getByTestId('room-appointments-choice-1').check();
+    await expect(preview.getByTestId('room-appointment-row').nth(1)).toContainText('Gemeinsam essen');
+    await expect(preview.getByTestId('room-appointment-room').nth(1)).toHaveText('Saal');
+    await expect(preview.getByTestId('room-appointment-room').first()).toHaveCSS('text-align', 'right');
+    await expect(preview.getByTestId('room-appointments-pager')).toBeVisible();
+    await expect(preview).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await preview.screenshot({ path: 'test-results/room-appointments-light.png' });
+    await choose(page, 'room-appointments-appearance', 'dark');
+    await expect(preview).toHaveCSS('background-color', 'rgb(15, 23, 42)');
+    await page.getByTestId('room-appointments-choice-1').uncheck();
+    await page.getByTestId('room-appointments-choice-2').check();
+    await expect(preview.getByTestId('room-appointment-row')).toHaveCount(1);
+    await expect(preview.getByTestId('room-appointment-row')).toContainText('Ohne Raum');
+    await page.getByTestId('room-appointments-choice-2').uncheck();
+    await page.getByTestId('room-appointments-choice-1').check();
+    await expect(preview.getByTestId('room-appointments-pager')).toBeVisible();
+    expect(church.appointmentRequests?.some((query) => query.has('include[]'))).toBe(true);
+    await openSection(page, 'calendars');
+    await page.getByTestId('block-inspector').getByRole('switch', { name: 'Jugend', exact: true }).check();
+    await page.getByTestId('block-inspector').getByRole('switch', { name: 'Gottesdienste', exact: true }).uncheck();
+    await expect(preview).toContainText('Keine passenden Termine');
+    await page.getByTestId('block-inspector').getByRole('switch', { name: 'Gottesdienste', exact: true }).check();
+    await page.getByTestId('block-inspector').getByRole('switch', { name: 'Jugend', exact: true }).uncheck();
+    await expect(preview.getByTestId('room-appointments-pager')).toBeVisible();
+    // Publish only into the synthetic demo store and put this slide first through the normal UI.
+    await nudgeRow(page.locator('[data-testid="slide-item"].active').getByTestId('slide-handle'), 'ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.getByTestId('save').click();
+    await expect(page.getByTestId('save-status')).toHaveText('Veröffentlicht');
+    await expect(page.getByTestId('slide-item').first().getByTestId('room-appointments')).toHaveCount(1);
+    await page.clock.install({ time: NOW });
+    await page.goto('./player?screen=demo');
+    const player = page.getByTestId('player').getByTestId('room-appointments');
+    await expect(player.getByTestId('room-appointments-progress')).toBeVisible();
+    await expect(player.getByTestId('room-appointments-pager')).toHaveAttribute('aria-label', /^Seite 1 von/);
+    await page.clock.fastForward(10_500);
+    await expect(player.getByTestId('room-appointments-pager')).toHaveAttribute('aria-label', /^Seite 2 von/);
 });

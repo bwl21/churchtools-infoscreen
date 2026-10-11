@@ -59,7 +59,7 @@ das Feld nicht.
 
 ![Editor mit einer Terminliste als Karten, darüber das Kurzmenü mit den Kalendern](bilder/editor.png)
 
-**Siebzehn Bausteine:** Text, Bild, Fläche, Linie, Galerie, Video, Uhr, Terminliste, Nächster Termin, Gemeindekopf mit
+**Achtzehn Bausteine:** Text, Bild, Fläche, Linie, Galerie, Video, Uhr, Terminliste, Termine mit Raum, Nächster Termin, Gemeindekopf mit
 Logo, Webseite, QR-Code, Countdown, Beiträge, Gruppen, Raumbelegung und Social Media. Beim Baustein „Webseite" geht statt der Adresse auch der
 Einbettungscode (`<iframe …>`), den Karten, Umfragen oder Pinnwände anbieten – übernommen wird nur die Adresse darin.
 Seiten des eigenen ChurchTools bettet der Baustein nicht ein.
@@ -167,6 +167,22 @@ Die Zeichen liegen im Programm: Der Fernseher fragt keine fremde Seite an und ze
 Die Profile stehen **untereinander** oder **nebeneinander**, bis zu zwölf je Baustein, in der Reihenfolge der Liste. Eine
 Zeile bricht nicht um; ein zu langer Name endet mit „…". Ein QR-Code je Profil gehört nicht dazu – dafür gibt es den
 Baustein „QR-Code".
+
+## Termine mit Raum
+
+![Termine mit Raum: Datum und Uhrzeit links, Titel und Untertitel in der Mitte, Räume rechtsbündig](bilder/termine-mit-raum.png)
+
+Der Baustein **„Termine mit Raum“** zeigt Termine aus den gewählten öffentlichen Kalendern ohne
+bestätigte Raumbuchung sowie Termine mit bestätigter Buchung in einem der gewählten Räume. Datum und Uhrzeit stehen links, Titel und Untertitel
+in der Mitte und die gewählten gebuchten Räume rechtsbündig. Bei mehreren Räumen genügt eine passende
+Buchung; ein Termin erscheint nur einmal. Ganztägige Termine zeigen „ganztägig“.
+
+**„Dunkel auf hell“** und **„Hell auf dunkel“** bestimmen Text und Hintergrund des Bausteins unabhängig
+von der Folie. Zeitraum, Schrift und Dauer je Seite sind einstellbar. Überzählige Termine wechseln
+automatisch auf weitere Seiten; die segmentierte Fortschrittsanzeige zeigt Seite und verbleibende Zeit.
+Die Folie bleibt mindestens so lange sichtbar, bis alle Seiten einmal gezeigt wurden. Im Designer
+bleibt die erste Seite stehen. Ohne Raumauswahl erscheinen nur Termine ohne bestätigte Raumbuchung;
+ihre Raumspalte bleibt leer.
 
 ## Der Raum am Termin
 

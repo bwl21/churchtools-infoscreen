@@ -20,8 +20,9 @@ import { useBlockEdit, type StyledBlock } from './use-block';
 /**
  * `effects`: `'shadow'` adds the shadow of the text (clock, countdown, church header), `'all'` the shadow and the band
  * behind the lines (the text block, where both go to the short menu); without it neither shows (Plan.md F3).
+ * `fixedColors`: the room appointment block owns its light/dark colours, so no unused colour field is offered.
  */
-const props = defineProps<{ block: StyledBlock; alignQuick?: boolean; effects?: 'shadow' | 'all' }>();
+const props = defineProps<{ block: StyledBlock; alignQuick?: boolean; effects?: 'shadow' | 'all'; fixedColors?: boolean }>();
 const edit = useEdit();
 const { editor, setStyle } = useBlockEdit(() => props.block);
 
@@ -70,7 +71,7 @@ const summary = computed(() => {
 <template>
     <InspectorSection id="font" :title="t.inspector.font" :summary="summary">
         <template #summary-extra>
-            <span class="swatch" :style="{ background: style.color }" />
+            <span v-if="!fixedColors" class="swatch" :style="{ background: style.color }" />
         </template>
         <FontField :model-value="style.fontFamily" :label="t.inspector.fontFamily" testid="font-family" @update:model-value="setStyle({ fontFamily: $event })" />
         <NumberField :model-value="style.fontSize" :label="t.inspector.fontSize" unit="px" :min="8" testid="font-size" @update:model-value="setStyle({ fontSize: $event })" />
@@ -84,6 +85,7 @@ const summary = computed(() => {
         />
         <ToggleField :model-value="style.uppercase ?? false" :label="t.inspector.uppercase" testid="text-uppercase" @update:model-value="setStyle({ uppercase: $event })" />
         <ColorField
+            v-if="!fixedColors"
             :label="t.common.fill.solid"
             quick
             testid="text-color"

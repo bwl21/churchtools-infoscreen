@@ -110,7 +110,7 @@ describe('readSlide – tolerant towards newer data', () => {
     });
 
     it('reads the social block (schema 1.33): layout and colours optional, at most 12 links, old slides stay valid', () => {
-        expect(SCHEMA_VERSION.minor).toBe(33);
+        expect(SCHEMA_VERSION.minor).toBeGreaterThanOrEqual(33);
         const old = makeSlide({ blocks: [textBlock('a')] });
         const social = (extra: Record<string, unknown> = {}) => ({
             id: 's', type: 'social', x: 0, y: 0, width: 900, height: 360, links: [{ url: 'instagram.com/wirsindcgks' }], style: (old.blocks[0] as { style: object }).style, ...extra,

@@ -121,6 +121,7 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
     line: t.blocks.line,
     clock: t.blocks.clock,
     'appointment-list': t.blocks['appointment-list'],
+    'room-appointments': t.blocks['room-appointments'],
     'next-appointment': t.blocks['next-appointment'],
     'church-header': t.blocks['church-header'],
     web: t.blocks.web,
@@ -141,6 +142,7 @@ export const BLOCK_ICONS: Record<BlockType, IconName> = {
     line: 'line',
     clock: 'clock',
     'appointment-list': 'list',
+    'room-appointments': 'list',
     'next-appointment': 'calendar',
     'church-header': 'header',
     web: 'web',
@@ -195,6 +197,7 @@ export function createBlock(
         line: [800, 40],
         clock: [400, 100],
         'appointment-list': [1400, 600],
+        'room-appointments': [1600, 850],
         'next-appointment': [1400, 600],
         'church-header': [1200, 100],
         web: [1100, 800],
@@ -233,6 +236,8 @@ export function createBlock(
             return { ...frame, type, format: 'time', style: textStyle(64, { fontWeight: 600, align: 'right' }) };
         case 'appointment-list':
             return { ...frame, type, calendarIds: calendars, horizonDays: 14, limit: 6, showRooms: true, style: textStyle(44) };
+        case 'room-appointments':
+            return { ...frame, type, calendarIds: calendars, roomIds: [], horizonDays: 14, pageSeconds: 10, appearance: 'light', style: textStyle(44, { fontWeight: 700 }) };
         case 'next-appointment':
             return { ...frame, type, calendarIds: calendars, showImage: true, showRooms: true, style: textStyle(64, { fontWeight: 600 }) };
         case 'church-header':

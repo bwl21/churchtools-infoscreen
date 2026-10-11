@@ -7,6 +7,7 @@
  * never reaches the instance. Skipped in the normal test run.
  */
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { blockExternalRequests } from './local-church';
 import { addBlock, choose, openSection, openSlides } from './helpers';
 
 const OUT = 'docs/bilder';
@@ -17,6 +18,7 @@ test.use({ viewport: { width: 1440, height: 900 } });
 // The pictures show the editor without guides – with the grid the stage looks busy (user, 2026-10-09).
 // The grid is a choice of the browser (`infoscreen-designer.grid`), so it is set off before each page loads.
 test.beforeEach(async ({ page }) => {
+    await blockExternalRequests(page);
     await page.addInitScript(() => {
         try {
             localStorage.setItem('infoscreen-designer.grid', '0');
@@ -601,4 +603,27 @@ test.describe('on a phone', () => {
         await expect(page.getByTestId('phone-block-row')).toBeVisible();
         await shoot(page, 'handy');
     });
+});
+
+
+test('room appointments for the documentation', async ({ page, baseURL }) => {
+    origin = new URL(baseURL!).origin;
+    await fakeChurch(page);
+    await page.goto('./');
+    await page.getByTestId('screen-card').filter({ hasText: 'Foyer' }).getByTestId('open-editor').click();
+    await page.getByTestId('add-slide').click();
+    await addBlock(page, 'room-appointments');
+    await frame(page, { x: 60, y: 60, width: 1800, height: 960 });
+    await openSection(page, 'calendars');
+    await page.getByTestId('block-inspector').getByRole('switch', { name: 'Jugend', exact: true }).check();
+    await page.getByTestId('block-inspector').getByRole('switch', { name: 'Gemeindeleben', exact: true }).check();
+    await page.getByTestId('room-appointments-choice-1').check();
+    await page.getByTestId('room-appointments-choice-3').check();
+    const block = page.locator('.editor-stage').getByTestId('room-appointments');
+    await expect(block.getByTestId('room-appointment-row').first()).toBeVisible();
+    await expect(block.getByTestId('room-appointment-room').filter({ hasText: 'Saal' }).first()).toBeVisible();
+    await expect(block.getByTestId('room-appointment-room').filter({ hasText: 'Jugendkeller' }).first()).toBeVisible();
+    await expect(block.getByTestId('room-appointment-room').filter({ hasText: /^$/ }).first()).toBeVisible();
+    await expect(block.getByTestId('room-appointment-subtitle').first()).toBeVisible();
+    await shoot(page, 'termine-mit-raum');
 });

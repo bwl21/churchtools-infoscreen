@@ -11,6 +11,7 @@ import NextAppointmentInspector from './NextAppointmentInspector.vue';
 import PostsInspector from './PostsInspector.vue';
 import QrInspector from './QrInspector.vue';
 import RoomsInspector from './RoomsInspector.vue';
+import RoomAppointmentsInspector from './RoomAppointmentsInspector.vue';
 import ShapeInspector from './ShapeInspector.vue';
 import SlideshowInspector from './SlideshowInspector.vue';
 import SocialInspector from './SocialInspector.vue';
@@ -39,4 +40,5 @@ export const BLOCK_INSPECTORS: Record<BlockType, Component> = {
     posts: PostsInspector,
     groups: GroupsInspector,
     rooms: RoomsInspector,
+    'room-appointments': RoomAppointmentsInspector,
 };

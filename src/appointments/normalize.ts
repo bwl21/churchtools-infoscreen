@@ -76,6 +76,8 @@ export interface Appointment {
      * Missing where rooms were not asked for or none is booked.
      */
     rooms?: string[];
+    /** Confirmed booked rooms with stable IDs, for filtering without comparing translated names. */
+    bookedRooms?: RoomInfo[];
     /**
      * Who takes which service – names only, no id of a person, no image, no comment (Plan.md, 51).
      * By `sortKey` of the service, then name. Missing where services were not asked for or nobody is assigned.
@@ -124,7 +126,7 @@ function normalizeOne(response: AppointmentResponse, timeZone: string, rooms: Ro
     const endDate = base.allDay ? allDayEndDate(calculated.endDate, endRaw, timeZone) : zonedDateKey(endRaw, timeZone);
     const end = DATE_ONLY.test(calculated.endDate) ? startOfZonedDay(endRaw, timeZone, 1) : endRaw;
 
-    const roomNames = bookedRooms(response.bookings ?? response.appointment.bookings, rooms);
+    const appointmentRooms = bookedRooms(response.bookings ?? response.appointment.bookings, rooms);
 
     return {
         key: `${base.id}@${start.toISOString()}`,
@@ -145,12 +147,12 @@ function normalizeOne(response: AppointmentResponse, timeZone: string, rooms: Ro
         imageUrl: base.image?.imageUrl ?? null,
         location: [base.address?.name, base.address?.addition].map((part) => part?.trim()).filter(Boolean).join(', ') || null,
         description: plainText(base.description ?? ''),
-        ...(roomNames.length ? { rooms: roomNames } : {}),
+        ...(appointmentRooms.length ? { rooms: appointmentRooms.map((r) => r.name), bookedRooms: appointmentRooms } : {}),
     };
 }
 
-/** Names of the rooms with a confirmed booking, each once, in the order of `rooms`. */
-function bookedRooms(bookings: BookingEntry[] | null | undefined, rooms: RoomInfo[]): string[] {
+/** Confirmed booked rooms, each once, in the order of the room masterdata. */
+function bookedRooms(bookings: BookingEntry[] | null | undefined, rooms: RoomInfo[]): RoomInfo[] {
     if (!bookings?.length || !rooms.length) return [];
     const booked = new Set<number>();
     for (const entry of bookings) {
@@ -158,7 +160,7 @@ function bookedRooms(bookings: BookingEntry[] | null | undefined, rooms: RoomInf
         if (base?.statusId !== BOOKING_CONFIRMED) continue;
         booked.add(Number(base.resourceId));
     }
-    return rooms.filter((r) => booked.has(r.id)).map((r) => r.name);
+    return rooms.filter((r) => booked.has(r.id)).map((r) => ({ id: r.id, name: r.name }));
 }
 
 /** Text without tags and entities, on one line – enough for three lines on a TV. */

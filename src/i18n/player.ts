@@ -48,6 +48,9 @@ export const tp = {
     appointments: {
         noneInDays: (days: number) => `Keine Termine in den nächsten ${days} Tagen.`,
         nextLabel: 'Nächster Termin',
+        noneInRooms: 'Keine passenden Termine im gewählten Zeitraum.',
+        page: (page: number, count: number) => `Seite ${page} von ${count}`,
+        today: 'Heute',
         nonePlanned: 'Derzeit ist kein Termin geplant.',
         fallbackService: (id: number) => `Dienst ${id}`,
     },

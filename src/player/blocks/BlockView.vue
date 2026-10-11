@@ -8,6 +8,7 @@ import { blockImageUrl, headerLogoUrl } from '../images';
 import { qrShape } from '../qr';
 import { webFrame } from '../web';
 import AppointmentListView from './AppointmentListView.vue';
+import RoomAppointmentsView from './RoomAppointmentsView.vue';
 import ClockView from './ClockView.vue';
 import CountdownView from './CountdownView.vue';
 import GroupsView from './GroupsView.vue';
@@ -182,6 +183,7 @@ const imageUrl = computed(() => {
         <div v-else-if="block.type === 'qr'" class="placeholder" />
 
         <ClockView v-else-if="block.type === 'clock'" :block="block" />
+        <RoomAppointmentsView v-else-if="block.type === 'room-appointments'" :block="block" :slide-seconds="slideSeconds" />
         <AppointmentListView v-else-if="block.type === 'appointment-list'" :block="block" :slide-seconds="slideSeconds" />
         <NextAppointmentView v-else-if="block.type === 'next-appointment'" :block="block" />
         <CountdownView v-else-if="block.type === 'countdown'" :block="block" />

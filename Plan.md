@@ -2,6 +2,50 @@
 
 Ein ChurchTools Custom Module (CCM), mit dem angemeldete ChurchTools-Anwender Infoscreens gestalten. Das Ergebnis ist eine Webseite, die ein Kiosk-Browser aufruft und auf den Foyer-TVs anzeigt – auf einem Raspberry Pi, einem Mini-PC oder in einer VM.
 
+## Aktueller Auftrag: Termine mit Raum (2026-10-11)
+
+Neuer Branch `feat/termine-mit-raum`. Eigener Baustein „Termine mit Raum“: Kalender und Räume wählen;
+Termine ohne bestätigte Raumbuchung immer zeigen; Termine mit Raum nach den gewählten Räumen filtern. Datum und Uhrzeit links, Titel und
+Untertitel mittig, Räume rechtsbündig, Trennlinien wie in der Nutzervorlage. Hell auf dunkel oder dunkel
+auf hell wählbar. Vollständige Zeilen anhand ihrer Höhe lokal auf Seiten verteilen; automatische
+Seitenschaltung mit segmentierter Fortschrittsanzeige und einstellbarer Dauer. Die Folie bleibt, bis alle
+Seiten gezeigt wurden; die Designer-Vorschau hält die erste Seite.
+
+Umsetzung: `src/model/schema.ts` (Schema 1.34), `src/appointments/normalize.ts` (bestätigte Raum-IDs
+neben den bisherigen Namen), `src/appointments/rooms.ts`, `src/player/data.ts`, `src/player/paging.ts`,
+neue Player- und Inspektorkomponenten sowie Registrierung, Palette, deutsche Texte und Dokumentation.
+Bestehende API-Aufrufe und Regeln für öffentliche Kalender bleiben die Grundlage.
+
+**Datenbasis ausdrücklich freigegeben:** Die lokal bereitgestellte Spezifikation ist für diese Änderung
+unvollständig (siehe [Befunde.md](Befunde.md), G58). Der Nutzer hat am 2026-10-11 die Umsetzung auf der vorhandenen, getesteten
+Datenbasis und den Verzicht auf die vollständige Schemaprüfung für diesen Auftrag erlaubt. Keine weiteren
+Instanzzugriffe, keine Zugangsdaten laden. Die bereitgestellte Spezifikation bleibt außerhalb der Änderung.
+
+Fertig: Baustein auswählbar und speicherbar; Termine ohne Raum, Kalender-/Raumfilter, Untertitel, rechtsbündige Räume,
+beide Farbschemata, leere Zustände, lokale Seiten samt Fortschritt und Folienhaltezeit geprüft.
+Prüfung: Typprüfung, Lint und Unit-Tests lokal; ergänzte e2e-Prüfung ausschließlich mit erfundenen Daten.
+Der lokale Browsertest wurde gesondert freigegeben; die normale Vite-Konfiguration lädt Zugangsdaten und
+wurde deshalb für diese Prüfungen nicht verwendet.
+
+**Stand:** Auf `feat/termine-mit-raum` umgesetzt, Schema 1.34, noch nicht veröffentlicht. Typprüfung
+und Lint ohne Fehler (zwei bestehende Warnungen), 1301 Unit-Tests bestanden, sieben wegen fehlender
+Fixtures übersprungen. Der neue Chromium-Einzeltest prüft Kalender-/Raumfilter, Untertitel, rechtsbündige
+Räume, beide Farbschemata, Speichern in den Demo-Speicher und den automatischen Player-Seitenwechsel;
+er ist auch mit der Ergänzung für Termine ohne Raum grün (erneute lokale Browserprüfung ausdrücklich freigegeben). Die visuelle Prüfung zeigt die drei Spalten und segmentierte Anzeige wie vereinbart.
+Installationspaket am 2026-10-11 aktualisiert: `releases/churchtools-infoscreen-v0.19.0-termine-mit-raum-9d3ea8d-20261011-180647.zip`. Produktionsbuild und Bündelprüfung bestanden; ZIP-Integrität geprüft.
+Vollständige Instanz-Schemaprüfung bleibt offen (G58), ebenso eine Nutzerabnahme und Veröffentlichung.
+
+**Abschluss der Contribution (2026-10-11):** Die drei bestehenden Palette-Prüfungen in
+`e2e/editor.spec.ts` sind auf 18 Bausteine ergänzt und verwenden synthetische Antworten. Die ganze
+Raum-Testdatei ist in Chromium und WebKit geprüft (je 16 grün), die drei Palette-Prüfungen gezielt in
+beiden Browsern (je drei grün). Alle drei Dokumentationsprüfungen sind in Chromium grün; die Bilder
+sind mit einem zusätzlichen Beispiel des neuen Bausteins neu erstellt und visuell geprüft. Zwei ältere
+Raumprüfungen erwarteten bei einem zweiten Helferaufruf innerhalb eines Tests erneut genau drei
+Demo-Folien; der Helfer ist korrigiert, beide Einzelwiederholungen sind grün. Diese lokalen Abschlussprüfungen wurden ausdrücklich freigegeben; Server ohne `.env` und
+Proxy, externe Anfragen gesperrt. Die PR-Beschreibung mit Anwendertext, Changelog-Vorschlag und Prüfergebnissen ist lokal vorbereitet. Der Nutzer hat ausdrücklich
+festgelegt: Die API-Spezifikation wird nicht committet und in der PR-Beschreibung nicht erwähnt.
+Installationspakete gehören ebenfalls nicht zum Quellcode-PR.
+
 ## Auf einen Blick
 
 **Stand 2026-10-10.** Veröffentlicht sind `v0.1.0` bis `v0.19.0`; das Modul läuft im echten ChurchTools der Testinstanz. **Auf der Produktivinstanz ist es seit dem 2026-10-05 installiert** (der erste Versuch scheiterte am Kürzel, Befunde.md G52); **dort läuft `v0.18.1` (seit dem 2026-10-07), die Rechte sind aktualisiert; `v0.19.0` ist veröffentlicht (2026-10-10), aber noch nicht dort – das ZIP geht erst nach bestandenem P4 hinein, danach einmal „Rechte aktualisieren“ (Kategorie `drafts`).** Die Fernseher melden sich über ihre Adresse selbst an (Weg B, Abschnitt D). Das Repository ist seit dem 2026-09-25 öffentlich.
@@ -24,6 +68,8 @@ Ein ChurchTools Custom Module (CCM), mit dem angemeldete ChurchTools-Anwender In
    **Stand 2026-10-10:** **B1 bis F3 und der Baustein „Social Media“ (Punkt 80) sind gebaut und mit `v0.19.0` veröffentlicht.** Der Nutzer prüft per lokalem ZIP auf der Testinstanz. **C und E sind vom Nutzer abgenommen (2026-10-10), D bis auf die Rückmeldung unten.** Die Doku (`docs/Funktionen.md`, `docs/Onboarding.md`, `README.md`, alle Bilder samt `mehrere.png`) ist für C, D und E nachgezogen; die Bilder-Strecke lief seit C rot (eine eingefrorene Uhr ließ Vue den Klick auf einen Baustein verwerfen) und läuft wieder. **Rückmeldung zu D** *(Nutzer am Tablet, 2026-10-10; gebaut am selben Tag)*: (1) Die Knöpfe unter „Anordnen“ stießen an den Rand – jetzt eine Zeile je Achse, drei Kanten und daneben Verteilen. (2) Eine gewählte Gruppe richtete beim Ausrichten ihre Mitglieder gegeneinander aus – jetzt zählt sie wie ein Baustein: allein richtet sie sich an der Folie aus, mit anderen bewegt sie sich als Einheit, beim Verteilen zählt sie einfach (`unitsOf` in `arrange.ts`). (3) Am Tablet passte die Höhe nicht, der Inspektor musste gescrollt werden – der Editor nimmt jetzt `100dvh` statt `100vh`; das reichte nicht (Nutzer, 2026-10-10): Am iPad setzt ChurchTools nach dem Modul einen 56 px hohen App-Banner über die Kopfleiste, den die Messung des Abstands nach oben nicht bemerkte (Befunde.md G57) – jetzt beobachtet sie jedes Kind von `<body>`. (4) Die Kacheln der Mediathek-Seite haben ein „…“ mit „Löschen“ (Rest aus B3). **D ist abgenommen** (Nutzer, 2026-10-10), zuletzt die Gruppen in den Ebenen (Teil 5 unter Punkt 79, D9). **F1, F2 und F3 sind gebaut** *(Nutzer, 2026-10-10: „F1–F3 jetzt“, statt erst nach dem Mergen)* – als Fortsetzung der Kette `designer-d` → `designer-f1` → `designer-f2` → `designer-f3`, Schema 1.30 bis 1.32; die Abnahme am Tablet steht aus (Drehgriff und Ausschnitt mit dem Finger sind nur mit der Maus geprüft), die Bilder der Doku zeigen F seit dem 2026-10-10 (neu `gestalten.png`). **F4** (Bewegung beim Einblenden) wartet auf die Messung am Pi nach P4. **Danach** *(Nutzer, 2026-10-10)*: Testpersonen für die Abnahme planen, sobald der neue Designer auf der Produktivinstanz läuft; der Seitenrand (D8) bleibt später. **Gemergt und veröffentlicht am 2026-10-10** (#80 bis #90, Versions-PR #91, Tag `v0.19.0`); die Branch-Kette ist durch. Die alten Zweige `designer-*` und `merge/designer-*` auf GitHub sind übrig.
 5. **Vorschau in einem zweiten Fenster** (Punkt 56) – skizziert; geparkt (Nutzer, 2026-10-10).
 6. **Teststrategie prüfen – keine doppelten Prüfungen** (Punkt 60) – vom Nutzer gewünscht am 2026-10-02; eine Durchsicht, später (Nutzer, 2026-10-10).
+
+7. **Termine mit Raum** – auf `feat/termine-mit-raum` lokal umgesetzt und geprüft (2026-10-11, ausdrücklich beauftragt). Kalender-/Raumfilter, Untertitel, rechtsbündige Raumspalte, Hell-/Dunkelwahl und lokale Seiten mit segmentiertem Fortschritt. Noch nicht veröffentlicht; Nutzerabnahme und vollständige Schemaprüfung offen. Details im Abschnitt „Aktueller Auftrag“ oben.
 
 **Kleine Reste, kein Auftrag, bis jemand sie wählt** *(durchgesehen mit dem Nutzer am 2026-10-10: später; „Rechte aktualisieren“ echt ausprobiert, ohne Auffälligkeiten)*:
 

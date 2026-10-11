@@ -18,6 +18,7 @@ ChurchTools und erscheinen von selbst auf dem Bildschirm. Ein Fernseher mit Kios
 - **Ausprobieren ohne Risiko:** Der Editor sichert jede Änderung als Entwurf; die Fernseher zeigen sie erst nach
   „Veröffentlichen".
 - **Inhalte aus ChurchTools zeigen:** Termine als Liste oder als Karten (auf Wunsch mit Ort, Raum und Diensten),
+  „Termine mit Raum“ mit Kalender-/Raumfilter, Untertitel, heller oder dunkler Darstellung und lokalen Seiten,
   den nächsten Termin, Gruppen mit Treffzeit und QR-Code zur Anmeldung, aktuelle Beiträge und die Raumbelegung.
   Was in ChurchTools geändert wird, steht nach etwa 20 Sekunden auf dem Bildschirm.
 - **Wechseln nach Plan:** Mehrere Folien laufen als Präsentation. Zeitpläne schalten um, etwa „30 Minuten vor dem

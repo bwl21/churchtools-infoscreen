@@ -229,7 +229,7 @@ export function appointmentNeeds(
     let days = 1;
     const blocks = slides.flatMap((s) => s.blocks);
     for (const block of blocks) {
-        if (block.type === 'appointment-list') {
+        if (block.type === 'appointment-list' || block.type === 'room-appointments') {
             block.calendarIds.forEach((id) => ids.add(id));
             days = Math.max(days, block.horizonDays);
         }
