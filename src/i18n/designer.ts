@@ -506,10 +506,16 @@ export const t = {
         showAppointmentImage: 'Terminbild zeigen',
         showRoom: 'Raum zeigen',
         showRoomInfo:
-            'Zeigt die gebuchten Räume des Termins, wo kein Ort eingetragen ist – ein eingetragener Ort geht vor, damit nichts doppelt steht. ' +
+            'Zeigt die gebuchten Räume des Termins: in Zeilen am Ende der Zeile, bei Karten und beim nächsten Termin mit der Pin-Nadel. ' +
+            'Ein eingetragener Ort geht vor, damit nichts doppelt steht. ' +
             'Nur bestätigte Buchungen, keine, die noch warten. Damit der Fernseher sie sieht, bekommt das Gerät mit „Rechte aktualisieren“ ' +
             'das Recht, alle Räume zu sehen; zeigt kein Bildschirm mehr Räume an Terminen, nimmt „Rechte aktualisieren“ es zurück.',
         roomsFor: 'Räume zeigen für',
+        roomsForCalendars: 'Kalender',
+        roomsForRooms: 'Räume',
+        roomsOffInfo: 'Ein abgeschalteter Raum wird nur nicht genannt. Der Termin bleibt in der Liste.',
+        roomsNone: 'Räume sind noch nicht geladen oder es gibt keine. Dann werden alle gebuchten Räume genannt.',
+        roomsRestricted: 'eingeschränkt',
         servicesTitle: 'Dienste zeigen',
         servicesInfo:
             'Zeigt, wer den Dienst übernimmt – nur zugesagte Einteilungen und nur Dienste aus Dienstgruppen, die in ChurchTools ‚Ohne Berechtigung einsehbar‘ sind. ' +
@@ -598,9 +604,10 @@ export const t = {
         resetLogo: 'Logo aus ChurchTools verwenden',
         webAddress: 'Adresse oder Einbettungscode',
         webInfo:
-            'Mit Enter übernehmen – erst dann lädt die Seite. Statt der Adresse geht auch der Einbettungscode („iframe"), den Karten, Umfragen oder Pinnwände ' +
-            'anbieten – übernommen wird nur die Adresse darin. Die Seite wird nur gezeigt, nicht bedient. Ohne Netz bleibt der Rahmen leer. Viele große Seiten ' +
-            'wie Google verbieten das Einbetten – der Rahmen zeigt dann einen Fehler. Eigene Seiten, etwa die der Gemeinde-Website, gehen meist.',
+            'Viele Seiten verbieten, dass andere sie einbetten, auch manche Gemeinde-Website. Dann bleibt der Rahmen leer oder zeigt einen Fehler; ' +
+            'erkennen kann der Designer das nicht, aber man sieht es gleich auf der Folie. Die Adresse gilt nach Enter oder beim Verlassen des Feldes, ' +
+            'erst dann lädt die Seite. Statt der Adresse geht auch der Einbettungscode („iframe"), den Karten, Umfragen oder Pinnwände anbieten; ' +
+            'übernommen wird nur die Adresse darin. Die Seite wird nur gezeigt, nicht bedient. Ohne Netz bleibt der Rahmen leer.',
         webNoAddressInCode: 'Im Einbettungscode steht keine Adresse.',
         webSize: 'Größe der Seite',
         webZooms: {
