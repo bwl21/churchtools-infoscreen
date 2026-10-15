@@ -72,6 +72,7 @@ const summary = computed(() => {
         <template #summary-extra>
             <span class="swatch" :style="{ background: style.color }" />
         </template>
+        <slot name="first" />
         <FontField :model-value="style.fontFamily" :label="t.inspector.fontFamily" testid="font-family" @update:model-value="setStyle({ fontFamily: $event })" />
         <NumberField :model-value="style.fontSize" :label="t.inspector.fontSize" unit="px" :min="8" testid="font-size" @update:model-value="setStyle({ fontSize: $event })" />
         <SegmentField

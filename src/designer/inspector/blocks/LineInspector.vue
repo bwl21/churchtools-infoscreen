@@ -18,7 +18,7 @@ const dashes = [
     { value: 'solid', label: t.inspector.lineSolid },
     { value: 'dashed', label: t.inspector.lineDashed },
 ];
-const summary = computed(() => `${props.block.thickness} px`);
+const summary = computed(() => `${dashes.find((d) => d.value === (props.block.dash ?? 'solid'))?.label} · ${props.block.thickness} px`);
 
 /** A line thicker than its frame makes the frame grow with it, so the stroke can be grabbed again. */
 function setThickness(thickness: number): void {
