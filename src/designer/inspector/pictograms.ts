@@ -26,6 +26,13 @@ export const PICTOGRAMS = {
     ],
 
     // The appointment list: lines of date and title, or one card per appointment with the date tile at its left.
+    'list-visitor': [
+        { d: bar(5, 7, 8) }, { d: bar(17, 7, 15) }, { d: bar(37, 7, 6) },
+        { d: bar(5, 11, 6) }, { d: bar(17, 11, 10) },
+        { d: bar(5, 20, 8) }, { d: bar(17, 20, 15) }, { d: bar(37, 20, 6) },
+        { d: bar(5, 24, 6) }, { d: bar(17, 24, 10) },
+        { d: 'M5 15.5h38M5 28.5h38' },
+    ],
     'list-rows': [
         { d: bar(6, 8, 8) }, { d: bar(18, 8, 24) },
         { d: bar(6, 16, 8) }, { d: bar(18, 16, 24) },

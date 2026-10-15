@@ -27,6 +27,10 @@ describe('the picture tiles of the blocks (Plan.md 79, B2)', () => {
         expect(appointmentListTiles(listBlock(), largeTheme)[0]!.pictogram).toBe('list-cards');
     });
 
+    it('offers the visitor overview as another layout of the existing appointment list', () => {
+        expect(appointmentListTiles(listBlock(), nativeTheme).find((tile) => tile.value === 'visitor')).toMatchObject({ label: 'Besucherübersicht', pictogram: 'list-visitor' });
+    });
+
     it('"Wie im Design" ignores the layout the block itself has: it names the theme', () => {
         const own = { ...listBlock(), layout: 'cards' as const };
         expect(appointmentListTiles(own, nativeTheme)[0]!.pictogram).toBe('list-rows');

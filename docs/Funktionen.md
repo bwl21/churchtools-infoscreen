@@ -180,6 +180,31 @@ Uhr und Countdown, mit der Ausrichtung waagerecht wie senkrecht. Untereinander
 richtet sie die Zeilen aus, nebeneinander die ganze Reihe. Ein QR-Code je Profil gehört nicht dazu – dafür gibt es den
 Baustein „QR-Code".
 
+## Darstellungen der Terminliste
+
+Die **Terminliste** bietet unter **„Darstellung“** neben „Wie im Design“, „Zeilen“ und „Karten“ die
+**„Besucherübersicht“**. Sie ist vor allem für die Orientierung von Besuchern auf einem Display im
+Eingangsbereich des Gemeindezentrums gedacht: Datum und Uhrzeit stehen links übereinander, Titel
+und Untertitel in der Mitte und die gebuchten Räume rechtsbündig in einer eigenen Spalte.
+
+| Darstellung | Schwerpunkt |
+| --- | --- |
+| Zeilen | Kompakte Übersicht mit Datum, Uhrzeit und Titel in einer Zeile; Ort/Raum auf Wunsch rechts |
+| Karten | Datumskachel, Kalenderkennzeichnung, Untertitel und auf Wunsch Dienste; ein eingetragener Ort hat Vorrang vor Räumen |
+| Besucherübersicht | Großzügige Zeilen mit Untertitel und eigener Raumspalte; hier stehen die gewählten gebuchten Räume unabhängig vom eingetragenen Ort |
+
+![Terminliste mit Besucherübersicht und rechtsbündigen Räumen](bilder/terminliste-besucher.png)
+
+Kalender, Zeitraum, Schriftfarbe und Raumauswahl sind die vorhandenen Einstellungen der Terminliste.
+Die Raumauswahl bestimmt, welche Raumnamen genannt werden; sie entfernt keine Termine. Ohne gebuchten
+oder angezeigten Raum bleibt die rechte Spalte leer. Hintergrund und Schriftfarbe folgen den vorhandenen
+Einstellungen; eine zusätzliche Hell-/Dunkelwahl gibt es nicht.
+
+Mit **„Alle Termine, seitenweise“** nutzt auch die Besucherübersicht die Seitenschaltung der Terminliste.
+Die Dauer je Seite ist einstellbar; die segmentierte Fortschrittsanzeige zeigt die aktuelle Seite und
+ihren zeitlichen Fortschritt. Die Folie bleibt mindestens so lange sichtbar, bis alle Seiten gezeigt
+wurden. Im Designer bleibt die erste Seite stehen.
+
 ## Der Raum am Termin
 
 Beim **Nächsten Termin** und bei der **Terminliste** – als Karten wie als Zeilen – zeigt der Schalter **„Raum zeigen"** die

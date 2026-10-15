@@ -11,12 +11,14 @@ import { formatDate, formatShortDate, WIDEST_DATE, placeLine, servicesLine, time
 import CalendarBadge from './CalendarBadge.vue';
 import DateTile from './DateTile.vue';
 import { tp } from '../../i18n/player';
+import { startOfZonedDay, zonedDateKey } from '../../appointments/zoned';
 
 /** `measuring`: a row of the hidden copy – not to be found as one that shows. */
 const props = defineProps<{
     appointment: Appointment;
-    layout: 'rows' | 'cards';
+    layout: 'rows' | 'cards' | 'visitor';
     timeZone: string;
+    now?: Date;
     measuring?: boolean;
     /** The block asks for rooms at this appointment: the rows then show the place column (schema 1.34). */
     showRooms?: boolean;
@@ -32,6 +34,12 @@ const place = computed(() => placeLine(props.appointment, props.roomNames ?? [])
 const rowPlace = computed(() => (props.showRooms && place.value ? place.value : null));
 const widestDate = computed(() => formatDate(WIDEST_DATE, props.timeZone));
 const people = computed(() => servicesLine(props.appointment, props.services));
+const visitorDate = computed(() => {
+    const now = props.now;
+    if (now && props.appointment.startDate === zonedDateKey(now, props.timeZone)) return tp.appointments.today;
+    if (now && props.appointment.startDate === zonedDateKey(startOfZonedDay(now, props.timeZone, 1), props.timeZone)) return tp.time.tomorrow;
+    return formatShortDate(props.appointment.start, props.timeZone).replace('.', '');
+});
 </script>
 
 <template>
@@ -68,6 +76,17 @@ const people = computed(() => servicesLine(props.appointment, props.services));
             </span>
         </span>
         <CalendarBadge v-if="showCalendar !== false" class="card-badge" :name="appointment.calendarName" :color="appointment.color" />
+    </li>
+    <li v-else-if="layout === 'visitor'" class="row visitor" :data-testid="measuring ? undefined : 'list-visitor-row'">
+        <span class="visitor-when">
+            <span>{{ visitorDate }}</span>
+            <span class="visitor-time">{{ timeRange(appointment).replace(' Uhr', '') }}</span>
+        </span>
+        <span class="visitor-body">
+            <span class="visitor-title">{{ appointment.title }}</span>
+            <span v-if="appointment.subtitle" class="visitor-subtitle">{{ appointment.subtitle }}</span>
+        </span>
+        <span class="visitor-room" :data-testid="measuring ? undefined : 'list-visitor-room'">{{ showRooms ? (roomNames ?? []).join(', ') : '' }}</span>
     </li>
     <li v-else class="row" :class="{ 'row--place': rowPlace }">
         <span class="when">{{ formatShortDate(appointment.start, timeZone) }}</span>
@@ -106,6 +125,51 @@ const people = computed(() => servicesLine(props.appointment, props.services));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.visitor {
+    grid-template-columns: 6.5em minmax(0, 1fr) minmax(0, 0.4fr);
+    gap: 0.7em;
+    box-sizing: border-box;
+    min-height: 4.4em;
+    padding: 0.9em 0;
+    line-height: 1.2;
+}
+.visitor-when {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    font-size: 0.85em;
+    font-weight: 400;
+    opacity: 0.75;
+}
+.visitor-time {
+    font-size: 0.75em;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.8;
+}
+.visitor-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.visitor-title {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.visitor-subtitle {
+    margin-top: 0.3em;
+    font-size: 0.7em;
+    font-weight: 400;
+    opacity: 0.7;
+    overflow-wrap: anywhere;
+}
+.visitor-room {
+    text-align: right;
+    font-size: 0.75em;
+    font-weight: 400;
+    opacity: 0.8;
+    overflow-wrap: anywhere;
 }
 /*
  * The plugin's parts in one line: tile, day and time in a column of fixed width – so every title starts at the

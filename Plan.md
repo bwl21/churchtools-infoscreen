@@ -2,6 +2,43 @@
 
 Ein ChurchTools Custom Module (CCM), mit dem angemeldete ChurchTools-Anwender Infoscreens gestalten. Das Ergebnis ist eine Webseite, die ein Kiosk-Browser aufruft und auf den Foyer-TVs anzeigt – auf einem Raspberry Pi, einem Mini-PC oder in einer VM.
 
+## Aktueller Auftrag: Besucherübersicht als Darstellung der Terminliste (2026-10-15)
+
+Branch `feat/terminliste-besucher-layout`, Basis aktualisiert auf Upstream `wirsindcgks/churchtools-infoscreen`, `main`, `v0.24.0` (`ff9025e`).
+Der eigenständige Baustein aus `feat/termine-mit-raum` wird nicht übernommen. Stattdessen erhält die
+vorhandene Terminliste eine zusätzliche Darstellung „Besucherübersicht“ in ihrer Darstellungsauswahl.
+Datum und Zeit links, Titel und Untertitel mittig, gewählte gebuchte Räume rechtsbündig; großzügige
+Zeilen mit Trennlinien und segmentierter Fortschritt wie in der Vorlage. Hintergrund und Schriftfarbe
+folgen den vorhandenen Einstellungen; keine eigene Hell-/Dunkelwahl (Nutzer, 2026-10-15).
+Der Einsatzzweck ist die Orientierung von Besuchern auf Displays im Eingangsbereich.
+
+Die Raum-Auswahl aus `v0.20.0` gilt unverändert: Sie bestimmt die genannten Räume, sie entfernt keine
+Termine. Termine ohne Raum bleiben sichtbar. Datenlader, Normalisierung, Auswahl, Zeilenmessung,
+Seitenzustand, Timer und Folienhaltezeit bleiben die bestehenden der Terminliste. Keine neuen
+Endpunkte und kein zweiter Bausteintyp. Die API-Spezifikation wird weder verwendet noch committet.
+
+Dateien: `src/model/schema.ts` (Schema 1.41: zusätzliches Layout), `src/player/theme.ts`,
+`src/player/blocks/AppointmentListView.vue`, `AppointmentRow.vue`, vorhandene Raum-/Dienst-Layoutregeln,
+Darstellungsauswahl und Piktogramm im Inspektor, deutsche Texte und Funktionsdokumentation.
+Prüfung: Typprüfung, Lint, Unit-Tests; gezielter Chromium-Test und ein Dokumentationsbild mit erfundenen
+Daten wurden separat freigegeben. Kein `.env`-Laden, kein Proxy und externe Anfragen gesperrt.
+Fertig: im bestehenden Auswahlfeld wählbar und speicherbar; Layout, Räume/raumlose Termine,
+Untertitel, vorhandene Farben und gemeinsame Seitenschaltung geprüft. Zeilen/Karten behalten ihr Verhalten.
+
+**Stand:** Besucherübersicht auf Upstream `v0.24.0` übertragen. Auswahl der Ressourcentypen,
+Kalenderfreigaben, Tags und der neue Inspektor bleiben erhalten. Schema 1.41, da Upstream bereits 1.40
+nutzt. Die neue Darstellung bleibt im Klappmenü „Darstellung“; dessen Zusammenfassung nennt
+„Besucherübersicht“, wenn sie gewählt ist. Der gezielte Test öffnet die seit v0.24.0 geschlossene
+Darstellungsgruppe ausdrücklich und prüft die Zusammenfassung sowie die bestehende Raum-Auswahl.
+Erneute Prüfung nach dem Rebase: Typprüfung, Lint und Unit-Tests vollständig, gezielt Chromium mit
+simulierten Daten und aktualisiertem Vorschaubild (separat freigegeben), ohne `.env`, Proxy oder
+externe Anfragen. Typprüfung bestanden; Lint ohne Fehler (zwei bestehende Warnungen);
+1365 Unit-Tests bestanden, sieben ohne Fixtures übersprungen. Der gezielte Chromium-Test für
+Raumtypen, Darstellungsauswahl, Zusammenfassung, Untertitel und Raumspalte sowie gemeinsame
+Seitenschaltung ist bestanden. Die bisherigen Installationspakete auf Basis v0.20.0
+und v0.21.0 sind überholt. Vor einem Merge stehen die betroffenen e2e-Dateien vollständig in Chromium
+und WebKit sowie die Dokumentationsbilder-Prüfung noch aus. Noch nicht veröffentlicht.
+
 ## Auf einen Blick
 
 **Stand 2026-10-15.** Veröffentlicht sind `v0.1.0` bis `v0.24.0` (`v0.20.0`: Räume in der Terminliste auswählen und in Zeilen zeigen, Punkt 82; `v0.20.1`: Schrift für Social Media, Schatten für Listen, Punkt 83; `v0.21.0`: Raumtypen wählbar, „Kalender zeigen“, einheitliche Auswahlfelder, Punkte 85 und 86; `v0.22.0`: Umbenennen von Wiki-Bereich und Gruppen, Punkt 84; `v0.23.0`: Tags ausblenden, interne Kalender freigeben, Raumbelegung bis 14 Tage, Fortschrittsbalken, Punkte 82 C, 85 und 86; `v0.24.0`: Ordnung im Inspektor, Punkt 88 A); das Modul läuft im echten ChurchTools der Testinstanz. **Auf der Produktivinstanz ist es seit dem 2026-10-05 installiert** (der erste Versuch scheiterte am Kürzel, Befunde.md G52); **dort läuft `v0.22.0` (seit dem 2026-10-15, davor `v0.21.0`), beide Screens „online“. Bernhard ist über `v0.22.0` informiert (2026-10-15). Der Gerätetest P4 ist bestanden (2026-10-14), der Feature-Stopp ist aufgehoben.** Die Fernseher melden sich über ihre Adresse selbst an (Weg B, Abschnitt D). Das Repository ist seit dem 2026-09-25 öffentlich.
@@ -14,6 +51,7 @@ Ein ChurchTools Custom Module (CCM), mit dem angemeldete ChurchTools-Anwender In
 2. **Ordnung im Inspektor, Paket B** (Punkt 88) – Paket A ist mit `v0.24.0` veröffentlicht (Regeln in `AGENTS.md`); offen, mit dem Nutzer zu klären: Farbfeld ohne zweites Aufklappen, „Anordnen" ohne Ebenenliste, Zähler an einer Stelle, „Schrift" für die Raumbelegung, lange Beschriftungen, Kurzmenü und Handy. Vor Punkt 87, weil der neue Bedienelemente in den Inspektor bringt.
 3. **Wiederverwendbare Designs in den Einstellungen** (Punkt 87) – Idee von Bernhard (2026-10-15), nach der technischen Runde (abgeschlossen mit `v0.23.0`): ein Seitenkopf, einmal gebaut und auf jeder Folie verknüpft; Standard-Darstellungen für Listen-Bausteine in den Einstellungen und vorgefertigte Layouts (halb/halb, zwei Drittel/ein Drittel, Kopf- und Fußzeile).
 4. **Der Designer für alle** (Punkt 79) – gestalten ohne Technikhintergrund, am Handy wie am Rechner. Reihenfolge: **B1** Begriffe (Folie, Präsentation, Bildschirm) und eine Textdatei → **A** Ordnung auf der Fläche (Bauplan fertig) → **B2** ein Wort, ein Bedienelement je Sache → **B3** neuer Look → **C** Kurzmenü, Text auf der Fläche, Bedienung mit dem Finger → **E** Entwurf und Veröffentlichen → **D** mehrere Bausteine → **F** Kreativ. 17 Fragen mit dem Nutzer geklärt am 2026-10-08/09; offen sind die Testpersonen (Seitenrand: später). **Seit dem 2026-10-14 läuft der neue Designer auf der Produktivinstanz (`v0.19.1`)** – damit sind die Abnahme am Tablet und die Testpersonen dran.
+5. **Besucherübersicht der Terminliste** – zusätzlicher Auftrag auf Branch `feat/terminliste-besucher-layout`, auf v0.24.0 übertragen; noch nicht veröffentlicht.
    **Stand 2026-10-10:** **B1 bis F3 und der Baustein „Social Media“ (Punkt 80) sind gebaut und mit `v0.19.0` veröffentlicht.** Der Nutzer prüft per lokalem ZIP auf der Testinstanz. **C und E sind vom Nutzer abgenommen (2026-10-10), D bis auf die Rückmeldung unten.** Die Doku (`docs/Funktionen.md`, `docs/Onboarding.md`, `README.md`, alle Bilder samt `mehrere.png`) ist für C, D und E nachgezogen; die Bilder-Strecke lief seit C rot (eine eingefrorene Uhr ließ Vue den Klick auf einen Baustein verwerfen) und läuft wieder. **Rückmeldung zu D** *(Nutzer am Tablet, 2026-10-10; gebaut am selben Tag)*: (1) Die Knöpfe unter „Anordnen“ stießen an den Rand – jetzt eine Zeile je Achse, drei Kanten und daneben Verteilen. (2) Eine gewählte Gruppe richtete beim Ausrichten ihre Mitglieder gegeneinander aus – jetzt zählt sie wie ein Baustein: allein richtet sie sich an der Folie aus, mit anderen bewegt sie sich als Einheit, beim Verteilen zählt sie einfach (`unitsOf` in `arrange.ts`). (3) Am Tablet passte die Höhe nicht, der Inspektor musste gescrollt werden – der Editor nimmt jetzt `100dvh` statt `100vh`; das reichte nicht (Nutzer, 2026-10-10): Am iPad setzt ChurchTools nach dem Modul einen 56 px hohen App-Banner über die Kopfleiste, den die Messung des Abstands nach oben nicht bemerkte (Befunde.md G57) – jetzt beobachtet sie jedes Kind von `<body>`. (4) Die Kacheln der Mediathek-Seite haben ein „…“ mit „Löschen“ (Rest aus B3). **D ist abgenommen** (Nutzer, 2026-10-10), zuletzt die Gruppen in den Ebenen (Teil 5 unter Punkt 79, D9). **F1, F2 und F3 sind gebaut** *(Nutzer, 2026-10-10: „F1–F3 jetzt“, statt erst nach dem Mergen)* – als Fortsetzung der Kette `designer-d` → `designer-f1` → `designer-f2` → `designer-f3`, Schema 1.30 bis 1.32; die Abnahme am Tablet steht aus (Drehgriff und Ausschnitt mit dem Finger sind nur mit der Maus geprüft), die Bilder der Doku zeigen F seit dem 2026-10-10 (neu `gestalten.png`). **F4** (Bewegung beim Einblenden) wartet auf die Messung am Pi nach P4. **Danach** *(Nutzer, 2026-10-10)*: Testpersonen für die Abnahme planen, sobald der neue Designer auf der Produktivinstanz läuft; der Seitenrand (D8) bleibt später. **Gemergt und veröffentlicht am 2026-10-10** (#80 bis #90, Versions-PR #91, Tag `v0.19.0`); die Branch-Kette ist durch. Die alten Zweige `designer-*` und `merge/designer-*` auf GitHub sind übrig.
 5. **Erst messen, dann planen** (Opus): **Videos ohne Netz** (Punkt 46.7 – ob der Service Worker ein Video samt Bereichsanfragen aus dem Cache liefern kann) und **eine eigene hochgeladene Schrift** (ob die Download-Adresse einer Schriftdatei unter der CSP trägt; bräuchte ein Schema-Feld).
 6. **Einführung in den Editor** (Punkt 81) – festgehalten am 2026-10-14, nicht beauftragt; drei Fragen an den Nutzer offen (Start von selbst oder als Karte, Handy, vor oder nach den Testpersonen).

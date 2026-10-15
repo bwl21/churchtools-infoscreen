@@ -9,7 +9,7 @@ import { LOCALE, tp } from '../i18n/player';
 /** The service ids a block shows; empty where it shows none. */
 export function appointmentServiceIds(block: Block): number[] {
     if (block.type === 'next-appointment') return block.services ?? [];
-    if (block.type === 'appointment-list' && block.layout !== 'rows') return block.services ?? [];
+    if (block.type === 'appointment-list' && block.layout !== 'rows' && block.layout !== 'visitor') return block.services ?? [];
     return [];
 }
 

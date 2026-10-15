@@ -100,7 +100,7 @@ const servicesSummary = computed(() => (shownServiceCount.value ? t.common.chose
             testid="show-rooms"
             @update:model-value="setShowRooms($event)"
         >
-            <template #info>{{ t.inspector.showRoomInfo }}</template>
+            <template #info>{{ t.inspector.showRoomInfo(block.type === 'appointment-list' && listLayout(block, themeOf(stage)) === 'visitor') }}</template>
         </ToggleField>
         <p v-if="roomsOn && context.roomTypeMissing" class="hint" data-testid="room-type-missing">{{ t.inspector.roomTypeMissing }}</p>
     </template>

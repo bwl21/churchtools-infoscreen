@@ -21,6 +21,12 @@ import { tp } from '../../i18n/player';
 const props = defineProps<{ block: Extract<Block, { type: 'appointment-list' }>; slideSeconds?: number }>();
 const context = useStageContext();
 const layout = computed(() => listLayout(props.block, themeOf(context)));
+const visitor = computed(() => layout.value === 'visitor');
+const inset = computed(() => visitor.value ? props.block.style.fontSize * 0.75 : 0);
+const visitorStyle = computed(() => visitor.value ? {
+    padding: `${inset.value}px`,
+    '--list-inset': `${inset.value}px`,
+} : {});
 
 const items = computed(() =>
     selectUpcoming(context.appointments, {
@@ -48,8 +54,8 @@ const reserve = computed(() => props.block.style.fontSize * 0.9);
 /** Without "alle Termine" only the rows that fit whole – a row cut off at the bottom looks broken. */
 const pages = computed(() =>
     props.block.showAll
-        ? paginateByHeight(items.value, heights.value, props.block.height, reserve.value)
-        : [paginateByHeight(items.value, heights.value, props.block.height, 0)[0]!],
+        ? paginateByHeight(items.value, heights.value, props.block.height - inset.value * 2, reserve.value)
+        : [paginateByHeight(items.value, heights.value, props.block.height - inset.value * 2, 0)[0]!],
 );
 const page = ref(0);
 const shown = computed(() => pages.value[page.value % pages.value.length] ?? []);
@@ -90,10 +96,12 @@ watch(
     [
         () => props.block.style.fontFamily,
         () => props.block.style.fontSize,
+        () => props.block.style.fontWeight,
         () => props.block.width,
         () => props.block.height,
         layout,
-        () => items.value.map((a) => a.key).join(),
+        () => items.value.map((a) => [a.key, a.title, a.subtitle, ...shownRoomNames(props.block, a)].join('|')).join(),
+        roomsShown,
     ],
     () => void nextTick(measure),
 );
@@ -106,19 +114,25 @@ onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <template>
-    <div class="paged" :style="textStyle(block.style)">
+    <div class="paged" :class="{ 'paged--visitor': visitor }" :style="{ ...textStyle(block.style), ...visitorStyle }">
         <!-- Every row once, invisible, in the same markup and width as the shown ones: for pages and whole rows. -->
         <ul ref="measureList" class="list measure" aria-hidden="true">
-            <AppointmentRow v-for="a in items" :key="a.key" :appointment="a" :layout="layout" :time-zone="context.timeZone" :show-rooms="roomsShown && showsRoomsAt(block, a.calendarId)" :room-names="roomsShown ? shownRoomNames(block, a) : []" :services="block.services" :show-calendar="block.showCalendar" measuring />
+            <AppointmentRow v-for="a in items" :key="a.key" :appointment="a" :layout="layout" :time-zone="context.timeZone" :now="context.now" :show-rooms="roomsShown && showsRoomsAt(block, a.calendarId)" :room-names="roomsShown ? shownRoomNames(block, a) : []" :services="block.services" :show-calendar="block.showCalendar" measuring />
         </ul>
         <Transition name="page" mode="out-in">
             <ul :key="page" class="list" :class="{ 'list--cards': layout === 'cards' }">
-                <AppointmentRow v-for="a in shown" :key="a.key" :appointment="a" :layout="layout" :time-zone="context.timeZone" :show-rooms="roomsShown && showsRoomsAt(block, a.calendarId)" :room-names="roomsShown ? shownRoomNames(block, a) : []" :services="block.services" :show-calendar="block.showCalendar" />
+                <AppointmentRow v-for="a in shown" :key="a.key" :appointment="a" :layout="layout" :time-zone="context.timeZone" :now="context.now" :show-rooms="roomsShown && showsRoomsAt(block, a.calendarId)" :room-names="roomsShown ? shownRoomNames(block, a) : []" :services="block.services" :show-calendar="block.showCalendar" />
                 <!-- An empty week is a normal state and must look like one, not like a failure. -->
                 <li v-if="items.length === 0" class="empty">{{ tp.appointments.noneInDays(block.horizonDays) }}</li>
             </ul>
         </Transition>
-        <div v-if="pages.length > 1" class="pager">
+        <div v-if="pages.length > 1 && visitor" class="pager pager--segments" role="img" :aria-label="tp.appointments.page(page + 1, pages.length)" data-testid="list-visitor-pager">
+            <span v-for="(_, index) in pages" :key="index" class="track">
+                <span v-if="index < page" key="complete" class="segment-fill" />
+                <span v-else-if="index === page && turnSeconds" :key="`active-${page}`" class="progress" data-testid="list-progress" :style="{ animationDuration: `${turnSeconds}s` }" />
+            </span>
+        </div>
+        <div v-else-if="pages.length > 1" class="pager">
             <!-- Fills up over the time of one page, anew on each page: how long until the next. -->
             <span class="track">
                 <span
@@ -139,6 +153,33 @@ onBeforeUnmount(() => clearInterval(timer));
     position: relative;
     width: 100%;
     height: 100%;
+}
+.paged--visitor {
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.paged--visitor .measure {
+    top: var(--list-inset);
+    left: var(--list-inset);
+    width: calc(100% - 2 * var(--list-inset));
+}
+.paged--visitor .pager {
+    bottom: var(--list-inset);
+    left: var(--list-inset);
+    right: var(--list-inset);
+}
+.paged--visitor .pager--segments {
+    gap: 0.3em;
+    font-size: 1em;
+}
+.pager--segments .track {
+    height: 0.16em;
+}
+.pager--segments .progress,
+.segment-fill {
+    display: block;
+    height: 100%;
+    background: var(--isd-accent, currentColor);
 }
 .list {
     list-style: none;
