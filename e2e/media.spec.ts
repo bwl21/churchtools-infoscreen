@@ -20,7 +20,7 @@ test('upload an image, place it, and get warned before deleting it', async ({ pa
     await expect(page.getByTestId('slide-item')).toHaveCount(3);
 
     await addBlock(page, 'image');
-    await page.getByTestId('pick-image').click();
+    await page.getByTestId('block-inspector').getByTestId('pick-image').click();
     await expect(page.getByTestId('media-library')).toBeVisible();
     await page.getByTestId('media-upload').setInputFiles({
         name,
@@ -37,7 +37,7 @@ test('upload an image, place it, and get warned before deleting it', async ({ pa
     await page.screenshot({ path: 'test-results/media-placed.png' });
 
     await page.getByTestId('save').click();
-    await expect(page.getByTestId('save-status')).toHaveText('Gespeichert');
+    await expect(page.getByTestId('save-status')).toHaveText('Veröffentlicht');
 
     // The player keeps the image on the device: after the first run it no longer needs the image service.
     // Chromium only: Playwright's WebKit context is ephemeral like a private window and keeps Cache
@@ -55,7 +55,7 @@ test('upload an image, place it, and get warned before deleting it', async ({ pa
     }
 
     // Delete it again: the question, then the usage warning (both answered with the red button), then the image is gone.
-    await page.getByTestId('pick-image').click();
+    await page.getByTestId('block-inspector').getByTestId('pick-image').click();
     const mine = page.getByTestId('media-item').filter({ hasText: name });
     await expect(mine).toHaveCount(1);
     await page.screenshot({ path: 'test-results/media-library.png' });
