@@ -505,6 +505,7 @@ export const t = {
         showAll: 'Alle Termine, seitenweise',
         showAppointmentImage: 'Terminbild zeigen',
         showRoom: 'Raum zeigen',
+        showCalendar: 'Kalender zeigen',
         showRoomInfo:
             'Zeigt die gebuchten Räume des Termins: in Zeilen am Ende der Zeile, bei Karten und beim nächsten Termin mit der Pin-Nadel. ' +
             'Ein eingetragener Ort geht vor, damit nichts doppelt steht. ' +
@@ -515,6 +516,8 @@ export const t = {
         roomsForRooms: 'Räume',
         roomsOffInfo: 'Ein abgeschalteter Raum wird nur nicht genannt. Der Termin bleibt in der Liste.',
         roomsNone: 'Räume sind noch nicht geladen oder es gibt keine. Dann werden alle gebuchten Räume genannt.',
+        roomTypeMissing:
+            'Keine Ressource gilt als Raum: Diese ChurchTools-Instanz hat keinen Ressourcentyp „Raum“. Ein Administrator wählt unter Einstellungen → Räume, welche Ressourcentypen Räume sind.',
         roomsRestricted: 'eingeschränkt',
         servicesTitle: 'Dienste zeigen',
         servicesInfo:
@@ -1200,6 +1203,9 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
                 done: 'Eingerichtet',
                 released: (n: number) => `${n} freigegeben`,
                 noneReleased: 'Keine freigegeben',
+                noRoomType: 'Kein Typ gewählt',
+                noResources: 'Keine Ressourcen',
+                roomTypes: (n: number) => `${n} Typen`,
             },
         },
         groups: {
@@ -1231,9 +1237,6 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             loadingGroups: 'Lade Gruppen …',
             noSuitable: 'Keine passende Gruppe? In ChurchTools unter „Gruppen" eine anlegen, auf „aktiv" stellen und hier wählen.',
             checking: 'Prüfe …',
-            saveSelection: 'Auswahl speichern',
-            saved: 'Gespeichert.',
-            saving: 'Speichert …',
             checkNote:
                 'Geprüft werden die Rechte der Gruppenrollen und ihrer Gruppentyp-Rollen, bei Geräten dazu Personenstatus und direkt vergebene Rechte. Weitere Gruppen eines Gerätekontos werden genannt, ihre Rechte aber nicht geprüft.',
             sameGroup: 'Gestalter und Geräte sind dieselbe Gruppe.',
@@ -1275,6 +1278,21 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             createType: 'Gruppen eines Gruppentyps erstellen',
         },
         groupFallback: (id: number) => `Gruppe ${id}`,
+        /** Groups, services and rooms save like the design page: with „Speichern" in the head (2026-10-15). */
+        saved: 'Gespeichert',
+        saving: 'Speichert …',
+        /** After a save that changes what the groups need: a question instead of a line one may miss. */
+        rightsNeeded: {
+            title: 'Rechte aktualisieren?',
+            ask:
+                'Gespeichert. Damit Gestalter und Fernseher die Änderung sehen, brauchen ihre Gruppen andere Rechte. ' +
+                'Jetzt „Rechte aktualisieren“? Vorher zeigt eine Vorschau, was sich ändert.',
+            byHand:
+                'Gespeichert. Damit Gestalter und Fernseher die Änderung sehen, brauchen ihre Gruppen andere Rechte. ' +
+                'Unter „Gruppen und Rechte“ zeigt die Prüfung, was fehlt.',
+            now: 'Jetzt aktualisieren',
+            later: 'Später',
+        },
         rightsOfOthers: 'Rechte anderer lesen darf nur, wer in ChurchTools Berechtigungen verwalten darf. Diese Seite ist für Administratoren.',
         services: {
             title: SERVICES_TITLE,
@@ -1286,11 +1304,20 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             lead: 'Dienste zeigen, wer eingeteilt ist – mit Vor- und Nachnamen, für alle sichtbar, die am Fernseher vorbeigehen. Hier legst du fest, welche Dienste Gestalter überhaupt wählen können. Ohne Auswahl erscheint kein Dienst. Zur Wahl stehen nur Dienste, deren Dienstgruppe in ChurchTools „Ohne Berechtigung einsehbar" ist und die Namen nicht verbergen.',
             failed: 'Dienste konnten nicht geladen werden.',
             none: 'In ChurchTools gibt es keinen Dienst, der gezeigt werden könnte.',
-            saved: 'Gespeichert',
             fallbackName: (id: number) => `Dienst ${id}`,
             release: 'Freigeben',
             confirm: (name: string) =>
                 `„${name}" freigeben? Die Namen der Eingeteilten stehen dann öffentlich auf den Fernsehern. Ist das mit der Gemeindeleitung abgestimmt?`,
+        },
+        rooms: {
+            title: 'Räume',
+            intro: 'Welche Ressourcentypen als Räume gelten.',
+            lead: 'Räume kommen aus den Ressourcen von ChurchTools. Als Raum gilt, was zu einem der hier gewählten Ressourcentypen gehört – ohne Auswahl der Typ „Raum“. Nur diese Ressourcen stehen in der Raumbelegung und an Terminen zur Wahl, und nur für sie vergibt „Rechte aktualisieren“ das Recht „Ressource sehen“.',
+            missing:
+                'Diese ChurchTools-Instanz hat keinen Ressourcentyp „Raum“, und es ist kein anderer gewählt. Deshalb zeigt kein Bildschirm Räume. Wähle die Typen, deren Ressourcen Räume sind.',
+            failed: 'Die Ressourcen konnten nicht geladen werden.',
+            none: 'In ChurchTools gibt es keine Ressourcentypen.',
+            empty: 'Keine Ressourcen',
         },
         wiki: {
             title: 'Mediathek im Wiki',
@@ -1477,6 +1504,9 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             internalCalendarDetail:
                 'Der Fernseher zeigt ihn nicht, aber wer seine Adresse kennt, kann ihn lesen. Das Recht kommt aus Status oder einer anderen Gruppe des Kontos.',
             roomUnknown: (id: number) => `Raum ${id} wird verwendet, ist aber nicht (mehr) zu finden.`,
+            roomTypeMissing: 'Kein Ressourcentyp für Räume gewählt.',
+            roomTypeMissingDetail:
+                'Diese ChurchTools-Instanz hat keinen Ressourcentyp „Raum“, darum zeigt kein Bildschirm Räume. Die Typen wählst du unter Einstellungen → Räume.',
             roomBlind: (room: string, labels: string) => `„${room}" ist für ${labels} nicht sichtbar.`,
             roomBlindDetail: 'Recht „Ressource sehen" für diesen Raum an die Rolle der Gerätegruppe geben – oder „Rechte aktualisieren".',
             roomVisible: (room: string) => `„${room}" ist sichtbar.`,
