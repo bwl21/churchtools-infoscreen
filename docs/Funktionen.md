@@ -239,19 +239,21 @@ Baustein „QR-Code".
 Die **Terminliste** bietet unter **„Darstellung“** neben „Wie im Design“, „Zeilen“ und „Karten“ die
 **„Besucherübersicht“**. Sie ist vor allem für die Orientierung von Besuchern auf einem Display im
 Eingangsbereich des Gemeindezentrums gedacht: Datum und Uhrzeit stehen links übereinander, Titel
-und Untertitel in der Mitte und die gebuchten Räume rechtsbündig in einer eigenen Spalte.
+und Untertitel in der Mitte und rechtsbündig der Raum, in den man gehen muss.
 
 | Darstellung | Schwerpunkt |
 | --- | --- |
 | Zeilen | Kompakte Übersicht mit Datum, Uhrzeit und Titel in einer Zeile; Ort/Raum auf Wunsch rechts |
 | Karten | Datumskachel, Kalenderkennzeichnung, Untertitel und auf Wunsch Dienste; ein eingetragener Ort hat Vorrang vor Räumen |
-| Besucherübersicht | Großzügige Zeilen mit Untertitel und eigener Raumspalte; hier stehen die gewählten gebuchten Räume unabhängig vom eingetragenen Ort |
+| Besucherübersicht | Großzügige Zeilen mit Untertitel; rechts der gebuchte Raum, ohne Raum der eingetragene Ort |
 
-![Terminliste mit Besucherübersicht und rechtsbündigen Räumen](bilder/terminliste-besucher.png)
+![Terminliste mit Besucherübersicht, rechts Raum oder Ort](bilder/terminliste-besucher.png)
 
 Kalender, Zeitraum, Schriftfarbe und Raumauswahl sind die vorhandenen Einstellungen der Terminliste.
-Die Raumauswahl bestimmt, welche Raumnamen genannt werden; sie entfernt keine Termine. Ohne gebuchten
-oder angezeigten Raum bleibt die rechte Spalte leer. Hintergrund und Schriftfarbe folgen den vorhandenen
+Die Raumauswahl bestimmt, welche Raumnamen genannt werden; sie entfernt keine Termine. Anders als in
+Zeilen und Karten geht hier der Raum vor den Ort: Wer im Foyer steht, sucht den Weg im Haus, und als Ort
+stünde oft überall derselbe Gemeindename. Ohne genannten Raum steht der Ort, ohne beides bleibt die
+rechte Spalte leer. Hintergrund und Schriftfarbe folgen den vorhandenen
 Einstellungen; eine zusätzliche Hell-/Dunkelwahl gibt es nicht.
 
 Mit **„Alle Termine, seitenweise“** nutzt auch die Besucherübersicht die Seitenschaltung der Terminliste.

@@ -12,7 +12,7 @@ export function appointmentListTiles(block: Extract<Block, { type: 'appointment-
         { value: '', label: t.inspector.layoutDesign, pictogram: listLayout({ ...block, layout: undefined }, theme) === 'cards' ? 'list-cards' : 'list-rows' },
         { value: 'rows', label: t.inspector.layoutRows, pictogram: 'list-rows' },
         { value: 'cards', label: t.inspector.layoutCards, pictogram: 'list-cards' },
-        { value: 'visitor', label: t.inspector.layoutVisitor, pictogram: 'list-visitor' },
+        { value: 'visitor', label: t.inspector.layoutVisitorTile, pictogram: 'list-visitor' },
     ];
 }
 

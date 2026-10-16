@@ -557,6 +557,8 @@ export const t = {
         layoutDesign: 'Wie im Design',
         layoutRows: 'Zeilen',
         layoutVisitor: 'Besucherübersicht',
+        /** The tile is narrow: the soft hyphen breaks the word at its seam, not between two letters. */
+        layoutVisitorTile: 'Besucher\u00adübersicht',
         layoutCards: 'Karten',
         layoutClassic: 'Schlicht',
         layoutCard: 'Hervorgehoben',
@@ -572,7 +574,7 @@ export const t = {
         showCalendar: 'Kalender zeigen',
         showRoomInfo: (visitor = false) =>
             (visitor
-                ? 'Zeigt die ausgewählten gebuchten Räume rechtsbündig, unabhängig vom eingetragenen Ort. Termine ohne Raum bleiben sichtbar. '
+                ? 'Zeigt die ausgewählten gebuchten Räume rechtsbündig; hat ein Termin keinen, steht dort der eingetragene Ort. Termine ohne Raum bleiben sichtbar. '
                 : 'Zeigt die gebuchten Räume des Termins: in Zeilen am Ende der Zeile, bei Karten und beim nächsten Termin mit der Pin-Nadel. Ein eingetragener Ort geht vor, damit nichts doppelt steht. ') +
             'Nur bestätigte Buchungen, keine, die noch warten. Damit der Fernseher sie sieht, bekommt das Gerät mit „Rechte aktualisieren“ ' +
             'das Recht, alle Räume zu sehen; zeigt kein Bildschirm mehr Räume an Terminen, nimmt „Rechte aktualisieren“ es zurück.',

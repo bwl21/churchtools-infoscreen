@@ -493,6 +493,16 @@ test('pictures for the documentation', async ({ page, baseURL }) => {
     await expect(page.locator('.editor-stage').getByTestId('room-row')).toHaveCount(3);
     await shoot(page, 'raumbelegung');
 
+    // The visitor overview of the appointment list (PR #111): the booked room where there is one, else the place.
+    await page.getByTestId('add-slide').click();
+    await addBlock(page, 'appointment-list');
+    await frame(page, { x: 60, y: 60, width: 1800, height: 960 });
+    await openSection(page, 'appearance');
+    await choose(page, 'list-layout', 'visitor');
+    await page.getByTestId('show-rooms').check();
+    await expect(page.locator('.editor-stage').getByTestId('list-visitor-room').first()).toHaveText('Saal');
+    await shoot(page, 'terminliste-besucher');
+
     // Posts of ChurchTools groups (Plan.md 33).
     await page.getByTestId('add-slide').click();
     await addBlock(page, 'posts');

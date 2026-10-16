@@ -162,7 +162,7 @@ export const AppointmentListBlock = v.object({
     /**
      * Since 1.8: `cards` – date tile, calendar badge, title, time and place, after
      * the list of the WordPress plugin (Plan.md, 20); `rows` is the plain list.
-     * Since 1.43: `visitor` – generous rows with date/time, subtitle and a separate room column.
+     * Since 1.43: `visitor` – generous rows with date/time, subtitle and a place column, the rooms before the place.
      */
     layout: v.optional(v.picklist(['rows', 'cards', 'visitor'])),
     /**

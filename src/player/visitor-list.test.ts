@@ -59,7 +59,7 @@ describe('visitor overview as a layout of the appointment list', () => {
         expect(appointmentServiceIds(block({ services: [1] }))).toEqual([]);
     });
 
-    it('shows dates over times, subtitles and actual booked rooms without replacing them with the address', async () => {
+    it('shows dates over times, subtitles and the booked rooms before the place', async () => {
         const { wrapper } = render();
         await flushPromises();
         const rows = wrapper.findAll('[data-testid="list-visitor-row"]');
@@ -69,24 +69,24 @@ describe('visitor overview as a layout of the appointment list', () => {
         expect(rows[0]!.find('.visitor-subtitle').text()).toBe('Gemeinsam essen');
         expect(rows[0]!.find('[data-testid="list-visitor-room"]').text()).toBe('Saal');
         expect(rows[1]!.find('.visitor-title').text()).toBe('Termin 2');
-        expect(rows[1]!.find('[data-testid="list-visitor-room"]').text()).toBe('');
+        expect(rows[1]!.find('[data-testid="list-visitor-room"]').text()).toBe('Eingetragener Ort');
         expect(rows[2]!.find('.visitor-subtitle').exists()).toBe(false);
         expect(wrapper.find('.paged').attributes('style')).toContain('color: rgb(171, 205, 239)');
         expect(wrapper.find('.paged').attributes('style')).not.toContain('background');
         wrapper.unmount();
     });
 
-    it('uses the existing room switches without removing appointments', async () => {
+    it('uses the existing room switches without removing appointments, the place standing in', async () => {
         const { wrapper, list } = render({ roomsOffIds: [1], roomsInRows: false });
         await flushPromises();
         expect(wrapper.findAll('[data-testid="list-visitor-row"]')).toHaveLength(3);
-        expect(wrapper.findAll('[data-testid="list-visitor-room"]').map((r) => r.text())).toEqual(['', '', '']);
+        expect(wrapper.findAll('[data-testid="list-visitor-room"]').map((r) => r.text())).toEqual(['Eingetragener Ort', 'Eingetragener Ort', 'Eingetragener Ort']);
         list.roomsOffIds = [];
         await flushPromises();
         expect(wrapper.find('[data-testid="list-visitor-room"]').text()).toBe('Saal');
         list.roomsOffCalendarIds = [1];
         await flushPromises();
-        expect(wrapper.findAll('[data-testid="list-visitor-room"]').every((r) => !r.text())).toBe(true);
+        expect(wrapper.findAll('[data-testid="list-visitor-room"]').every((r) => r.text() === 'Eingetragener Ort')).toBe(true);
         expect(wrapper.findAll('[data-testid="list-visitor-row"]')).toHaveLength(3);
         wrapper.unmount();
     });

@@ -686,7 +686,7 @@ test('visitor overview is offered by the appointment list and shares its rooms a
         return host === '127.0.0.1' || host === 'localhost' ? route.continue() : route.abort();
     });
     const appointments = [
-        scheduled(19, GOTTESDIENSTE, 'Gemeindefrühstück', '2026-10-04T07:00:00Z', { subtitle: 'Herzlich willkommen' }),
+        scheduled(19, GOTTESDIENSTE, 'Gemeindefrühstück', '2026-10-04T07:00:00Z', { subtitle: 'Herzlich willkommen', place: 'Marktplatz 1' }),
         ...Array.from({ length: 12 }, (_, i) => scheduled(i + 20, GOTTESDIENSTE, `Veranstaltung ${i + 1}`, '2026-10-04T08:00:00Z', { subtitle: 'Gemeinsam unterwegs', place: 'Eingetragener Ort', rooms: [1] })),
     ];
     // A custom resource type must be chosen in the upstream settings before the visitor layout uses its rooms.
@@ -706,7 +706,7 @@ test('visitor overview is offered by the appointment list and shares its rooms a
     await newBlock(page, 'appointment-list');
     await expect(page.getByTestId('section-appearance')).not.toHaveAttribute('open');
     await openSection(page, 'appearance');
-    await expect(page.getByTestId('list-layout').getByText('Besucherübersicht', { exact: true })).toBeVisible();
+    await expect(page.getByTestId('list-layout').getByText(/^Besucher\u00ad?übersicht$/)).toBeVisible();
     await choose(page, 'list-layout', 'visitor');
     await page.getByTestId('section-appearance-toggle').click();
     await expect(page.getByTestId('section-appearance-toggle')).toContainText('Besucherübersicht · 14 Tage');
@@ -726,7 +726,8 @@ test('visitor overview is offered by the appointment list and shares its rooms a
     await page.getByTestId('show-all').check();
     const preview = stage(page).locator('.paged--visitor');
     await expect(preview.getByTestId('list-visitor-row').first()).toContainText('Gemeindefrühstück');
-    await expect(preview.getByTestId('list-visitor-room').first()).toHaveText('');
+    // Rooms before the place: without a room the place stands, with one only the room.
+    await expect(preview.getByTestId('list-visitor-room').first()).toHaveText('Marktplatz 1');
     await expect(preview.getByTestId('list-visitor-row').nth(1)).toContainText('Gemeinsam unterwegs');
     await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('Saal');
     await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveCSS('text-align', 'right');
@@ -735,11 +736,10 @@ test('visitor overview is offered by the appointment list and shares its rooms a
     // Existing room choices affect the names, never the appointments.
     const count = await preview.getByTestId('list-visitor-row').count();
     await page.getByTestId('show-rooms').uncheck();
-    await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('');
+    await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('Eingetragener Ort');
     await expect(preview.getByTestId('list-visitor-row')).toHaveCount(count);
     await page.getByTestId('show-rooms').check();
     await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('Saal');
-    await page.screenshot({ path: 'docs/bilder/terminliste-besucher.png' });
     // Put the selected slide first, regardless of where new slides are inserted.
     await nudgeRow(page.locator('[data-testid="slide-item"].active').getByTestId('slide-handle'), 'ArrowUp');
     await page.keyboard.press('ArrowUp');

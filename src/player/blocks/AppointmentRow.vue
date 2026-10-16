@@ -7,7 +7,7 @@
  */
 import { computed } from 'vue';
 import type { Appointment } from '../../appointments/normalize';
-import { formatDate, formatShortDate, WIDEST_DATE, placeLine, servicesLine, timeRange } from '../format';
+import { formatDate, formatShortDate, WIDEST_DATE, placeLine, servicesLine, visitorPlace, timeRange } from '../format';
 import CalendarBadge from './CalendarBadge.vue';
 import DateTile from './DateTile.vue';
 import { tp } from '../../i18n/player';
@@ -86,7 +86,7 @@ const visitorDate = computed(() => {
             <span class="visitor-title">{{ appointment.title }}</span>
             <span v-if="appointment.subtitle" class="visitor-subtitle">{{ appointment.subtitle }}</span>
         </span>
-        <span class="visitor-room" :data-testid="measuring ? undefined : 'list-visitor-room'">{{ showRooms ? (roomNames ?? []).join(', ') : '' }}</span>
+        <span class="visitor-room" :data-testid="measuring ? undefined : 'list-visitor-room'">{{ visitorPlace(appointment, showRooms ? roomNames ?? [] : []) }}</span>
     </li>
     <li v-else class="row" :class="{ 'row--place': rowPlace }">
         <span class="when">{{ formatShortDate(appointment.start, timeZone) }}</span>
