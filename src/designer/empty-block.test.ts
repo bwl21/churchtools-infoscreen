@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { BlockType } from '../model/schema';
+import type { ContentBlockType } from '../model/schema';
 import { centerCovered, emptyAction } from './empty-block';
+import { templateBlock } from '../model/testing';
 import { createBlock } from './ops';
 
 const STAGE = { width: 1920, height: 1080 };
-const make = (type: BlockType) => createBlock(type, STAGE, [1]);
+const make = (type: ContentBlockType) => createBlock(type, STAGE, [1]);
 
 describe('emptyAction (Plan.md 79, C6)', () => {
     it('names what a fresh block lacks', () => {
@@ -16,6 +17,13 @@ describe('emptyAction (Plan.md 79, C6)', () => {
         expect(emptyAction(make('posts'))).toBe('Gruppen wählen');
         expect(emptyAction(make('groups'))).toBe('Homepage wählen');
         expect(emptyAction(make('rooms'))).toBe('Räume wählen');
+    });
+
+    it('says that a template is missing, but only once the templates are known', () => {
+        const block = templateBlock('k', 'weg');
+        expect(emptyAction(block)).toBeNull();
+        expect(emptyAction(block, new Map())).toBe('Vorlage fehlt');
+        expect(emptyAction(block, new Map([['weg', {}]]))).toBeNull();
     });
 
     it('says nothing about blocks that always have what they need', () => {
