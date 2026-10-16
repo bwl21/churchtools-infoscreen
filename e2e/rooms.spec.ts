@@ -238,9 +238,9 @@ test('choose rooms, see the bookings, and keep the titles private where asked', 
     await add.selectOption('2');
     await expect(page.getByTestId('room-entry')).toHaveCount(1);
     await page.getByTestId('rooms-add-all').click();
+    await expect(page.getByTestId('section-room-list-toggle')).toContainText('3 von 30');
     await openSection(page, 'room-list');
     await expect(page.getByTestId('room-name')).toHaveText(['Gruppenraum 1', 'Saal', 'Jugendkeller']);
-    await expect(page.getByTestId('rooms-count')).toHaveText('3 von 30');
     await expect(page.getByTestId('rooms-add')).toBeDisabled();
 
     // One request per room, for confirmed bookings only.
@@ -709,8 +709,15 @@ test('visitor overview is offered by the appointment list and shares its rooms a
     await expect(page.getByTestId('list-layout').getByText('Besucherübersicht', { exact: true })).toBeVisible();
     await choose(page, 'list-layout', 'visitor');
     await page.getByTestId('section-appearance-toggle').click();
-    await expect(page.getByTestId('section-appearance-toggle')).toContainText('Besucherübersicht');
+    await expect(page.getByTestId('section-appearance-toggle')).toContainText('Besucherübersicht · 14 Tage');
     await openSection(page, 'appearance');
+    await page.getByTestId('list-days').fill('1');
+    await page.getByTestId('list-days').blur();
+    await page.getByTestId('section-appearance-toggle').click();
+    await expect(page.getByTestId('section-appearance-toggle')).toContainText('Besucherübersicht · 1 Tag');
+    await openSection(page, 'appearance');
+    await page.getByTestId('list-days').fill('14');
+    await page.getByTestId('list-days').blur();
     await openSection(page, 'measures');
     for (const [key, value] of Object.entries({ x: 60, y: 60, width: 1800, height: 960 })) {
         await page.getByTestId(`inspector-${key}`).fill(String(value));

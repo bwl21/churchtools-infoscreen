@@ -76,7 +76,6 @@ export const t = {
             paletteOf: (label: string) => `${label}: Farbpalette`,
             onSlide: 'Auf der Folie',
             onSlideOf: (label: string) => `${label}: auf der Folie`,
-            custom: 'Eigene Farbe',
             accent: 'Akzent',
             text: 'Text',
             background: 'Hintergrund',
@@ -338,12 +337,14 @@ export const t = {
     /** The short menu above the chosen block (Plan.md 79, C1) and what an empty block says (C6). */
     quick: {
         label: (name: string) => `Kurzmenü: ${name}`,
-        /** The face of a chip that stands for a whole list: "Kalender · 3". */
-        count: (label: string, n: number) => `${label} · ${n}`,
+        /** The face of a chip that stands for a whole list, as the fold in the inspector sums it up: "Kalender 3 von 4". */
+        listFace: (label: string, summary: string) => `${label} ${summary}`,
+        /** The face of that chip while nothing is chosen: what to do. */
+        chooseCalendars: 'Kalender wählen',
         /** The name of a chip for a screen reader: the field and what it holds now. */
         chip: (label: string, face: string) => `${label}: ${face}`,
         /** The short words of a switch in the menu, where the full label is too long. */
-        short: { name: 'Name', logo: 'Logo', title: 'Titel', image: 'Bild' },
+        short: { name: 'Gemeindename', logo: 'Logo', title: 'Titel', image: 'Terminbild' },
         unlock: 'Entsperren',
         /** The right button of the phone bar's upper row: lets go of the block. */
         deselect: 'Auswahl aufheben',
@@ -464,6 +465,12 @@ export const t = {
         shadowNone: 'Ohne',
         shadowSoft: 'Weich',
         shadowStrong: 'Stark',
+        /** The chips of the short menu name what the bare word leaves open (Plan.md 88, C). */
+        shadowFace: { none: 'Ohne Schatten', soft: 'Schatten weich', strong: 'Schatten stark' },
+        toneNoneFace: 'Ohne Ton',
+        transitionNoneFace: 'Ohne Übergang',
+        webSizeFace: (percent: number) => `Größe ${percent} %`,
+        webAddressFace: 'Adresse',
         cropChoose: 'Ausschnitt wählen',
         videoMissing: 'Video fehlt',
         noVideo: 'Noch kein Video gewählt.',
@@ -476,7 +483,6 @@ export const t = {
         addImages: 'Bilder hinzufügen',
         noImages: 'Noch keine Bilder gewählt.',
         images: 'Bilder',
-        imageCount: (n: number) => `${n} Bilder`,
         imageMissing: 'Bild fehlt',
         removeImage: 'Bild entfernen',
         secondsPerImage: 'Dauer je Bild',
@@ -502,7 +508,9 @@ export const t = {
         layoutClassic: 'Schlicht',
         layoutCard: 'Hervorgehoben',
         period: 'Zeitraum',
-        unitDays: 'Tage',
+        /** The unit after a number of days: "1 Tag", "14 Tage". */
+        unitDays: (n: number) => (n === 1 ? 'Tag' : 'Tage'),
+        days: (n: number) => `${n} ${n === 1 ? 'Tag' : 'Tage'}`,
         unitSeconds: 's',
         secondsPerPage: 'Dauer je Seite',
         showAll: 'Alle Termine, seitenweise',
@@ -549,7 +557,8 @@ export const t = {
         periodPostsInfo: 'Zeigt nur Beiträge der letzten … Tage.',
         secondsPerPost: 'Dauer je Beitrag',
         showImage: 'Bild zeigen',
-        showAuthor: 'Namen der Autorin oder des Autors zeigen',
+        showAuthor: 'Name zeigen',
+        showAuthorInfo: 'Der Name der Person, die den Beitrag geschrieben hat.',
         groupsHomepage: 'Gruppen-Homepage',
         choose: '– wählen –',
         homepageGone: '(nicht mehr vorhanden)',
@@ -583,7 +592,6 @@ export const t = {
         addAllRooms: 'Alle Räume hinzufügen',
         noRoomsChosen: 'Noch keine Räume gewählt.',
         rooms: 'Räume',
-        roomCount: (n: number) => `${n} Räume`,
         roomsInfo: 'Gezeigt werden nur bestätigte Buchungen, keine, die noch warten.',
         roomHidden: (id: number) => `Raum ${id} – nicht sichtbar`,
         removeRoom: 'Raum entfernen',
@@ -611,7 +619,7 @@ export const t = {
         churchLogo: 'Das Logo aus den Gemeindeinfos von ChurchTools.',
         pickLogo: 'Logo wählen',
         swapLogo: 'Logo tauschen',
-        resetLogo: 'Logo aus ChurchTools verwenden',
+        resetLogo: 'Logo zurücksetzen',
         webAddress: 'Adresse oder Einbettungscode',
         webInfo:
             'Viele Seiten verbieten, dass andere sie einbetten, auch manche Gemeinde-Website. Dann bleibt der Rahmen leer oder zeigt einen Fehler; ' +

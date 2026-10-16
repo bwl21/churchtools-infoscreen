@@ -18,6 +18,7 @@ import SortList, { type SortItem } from '../fields/SortList.vue';
 import TextField from '../fields/TextField.vue';
 import TileField from '../fields/TileField.vue';
 import ToggleField from '../fields/ToggleField.vue';
+import FontSection from '../FontSection.vue';
 import { ROOMS_TILES } from '../layouts';
 import { move as moveItem } from '../../ops';
 import { useBlockEdit } from '../use-block';
@@ -34,7 +35,7 @@ const { setBlock } = useBlockEdit(() => props.block);
 const stage = useStageContext();
 const context = useInspectorContext();
 
-const summary = computed(() => `${ROOMS_TILES.find((o) => o.value === props.block.layout)?.label} · ${props.block.days} ${t.inspector.unitDays}`);
+const summary = computed(() => `${ROOMS_TILES.find((o) => o.value === props.block.layout)?.label} · ${t.inspector.days(props.block.days)}`);
 
 /** The name ChurchTools gives the room – from what the designer may see, else from the preview's data. */
 function roomName(resourceId: number): string | null {
@@ -81,8 +82,8 @@ function remove(index: number): void {
 </script>
 
 <template>
-    <!-- Choosing and ordering the rooms are one chip "Räume · 2" in the short menu, the first field of the block (Plan.md 79, C5). -->
-    <QuickField quick :label="t.inspector.rooms" :face="t.quick.count(t.inspector.rooms, block.rooms.length)">
+    <!-- Choosing and ordering the rooms are one chip "Räume 2 von 30" in the short menu, the first field of the block (Plan.md 79, C5). -->
+    <QuickField quick :label="t.inspector.rooms" :face="block.rooms.length ? t.quick.listFace(t.inspector.rooms, t.common.countOf(block.rooms.length, ROOMS_MAX)) : t.quick.empty.rooms">
         <!-- Plan.md 86: an instance without the type "Raum" shows no room until an administrator chooses a type. -->
         <p v-if="context.rooms && !context.rooms.length" class="hint" data-testid="rooms-none">
             {{ context.roomTypeMissing ? t.inspector.roomTypeMissing : t.inspector.noRooms }}
@@ -106,9 +107,8 @@ function remove(index: number): void {
                 {{ t.inspector.addAllRooms }}
             </button>
         </div>
-        <span v-if="context.rooms?.length" class="hint" data-testid="rooms-count">{{ t.common.countOf(block.rooms.length, ROOMS_MAX) }}</span>
         <p v-if="!block.rooms.length" class="hint">{{ t.inspector.noRoomsChosen }}</p>
-        <InspectorSection v-else id="room-list" :title="t.inspector.rooms" :summary="t.inspector.roomCount(block.rooms.length)">
+        <InspectorSection v-else id="room-list" :title="t.inspector.rooms" :summary="t.common.countOf(block.rooms.length, ROOMS_MAX)">
             <template #info>{{ t.inspector.roomsInfo }}</template>
             <SortList :items="chosen" :remove-label="t.inspector.removeRoom" testid="room" row-testid="room-entry" @move="move" @remove="remove">
                 <template #row="{ index }">
@@ -134,7 +134,7 @@ function remove(index: number): void {
             quick
             :model-value="block.days"
             :label="t.inspector.period"
-            :unit="t.inspector.unitDays"
+            :unit="t.inspector.unitDays(block.days)"
             :min="1"
             :max="14"
             testid="rooms-days"
@@ -154,21 +154,20 @@ function remove(index: number): void {
             {{ t.inspector.doorHint }}
         </p>
     </InspectorSection>
+    <FontSection :block="block" effects="shadow" />
 </template>
 
 <style scoped>
 .room-add {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
     gap: 6px;
     min-width: 0;
 }
 .select-box {
     position: relative;
     display: flex;
-    flex: 1 1 9rem;
-    min-width: 9rem;
+    min-width: 0;
 }
 .select-box select {
     flex: 1;

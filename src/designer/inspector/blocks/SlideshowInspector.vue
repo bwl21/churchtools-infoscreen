@@ -36,6 +36,11 @@ const fits = [
     { value: 'cover', label: t.inspector.fitCover },
 ];
 
+/** "Ohne" alone does not say what is missing in the chip. */
+function transitionFace(value: string | number | undefined): string {
+    return value === 'none' ? t.inspector.transitionNoneFace : (TRANSITION_TILES.find((o) => o.value === value)?.label ?? '');
+}
+
 /** An old block with the transition `zoom` is written as fade plus motion the moment either one changes. */
 function setSlideshow(patch: { transition?: string; motion?: string }): void {
     setBlock({ transition: effectiveTransition(props.block), motion: effectiveMotion(props.block), ...patch });
@@ -65,15 +70,12 @@ function remove(index: number): void {
         :filled="false"
         :pick-label="t.inspector.addImages"
         :swap-label="t.inspector.addImages"
-        :caption="t.common.countOf(block.mediaIds.length, SLIDESHOW_MAX)"
-        caption-muted
-        caption-testid="slideshow-count"
         :disabled="block.mediaIds.length >= SLIDESHOW_MAX"
         testid="pick-slideshow"
         @pick="context.pickImage('slideshow')"
     />
     <p v-if="mode === 'full' && !block.mediaIds.length" class="hint">{{ t.inspector.noImages }}</p>
-    <InspectorSection v-else id="slideshow-images" :title="t.inspector.images" :summary="t.inspector.imageCount(block.mediaIds.length)">
+    <InspectorSection v-else id="slideshow-images" :title="t.inspector.images" :summary="t.common.countOf(block.mediaIds.length, SLIDESHOW_MAX)">
         <SortList :items="items" :remove-label="t.inspector.removeImage" testid="slideshow" @move="move" @remove="remove" />
     </InspectorSection>
     <InspectorSection
@@ -96,6 +98,7 @@ function remove(index: number): void {
             quick
             :model-value="effectiveTransition(block)"
             :options="TRANSITION_TILES"
+            :face="transitionFace"
             :label="t.inspector.transition"
             testid="slideshow-transition"
             @update:model-value="setSlideshow({ transition: String($event) })"
