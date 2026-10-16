@@ -3,7 +3,7 @@
  * a name is a function. No library. The player never imports this file – what it shows lives in `player.ts`, and
  * what the store tells the designer in `repository.ts`.
  */
-import type { BlockType } from '../model/schema';
+import type { ContentBlockType } from '../model/schema';
 
 /** The heading of the settings page for services, which the inspector names, too. */
 const SERVICES_TITLE = 'Dienste auf Bildschirmen';
@@ -261,11 +261,12 @@ export const t = {
                 rooms: 'Wer heute welchen Raum belegt',
                 social: 'Instagram, YouTube und Co. mit Symbol und Namen',
                 video: 'Ein Video aus der Mediathek',
-            } satisfies Record<BlockType, string>,
+            } satisfies Record<ContentBlockType, string>,
             paste: 'Einfügen',
             pasteWhat: (label: string) => `${label} einfügen`,
         },
         stage: {
+            fillRegion: 'Bereich füllen',
             lockedTitle: (label: string) => `${label} – gesperrt: ein Klick greift auf Bausteine darunter durch, Alt-Klick wählt ihn`,
             lockBadge: 'Gesperrt – im Inspektor entsperren',
             empty: 'Diese Präsentation hat noch keine Folie.',
@@ -374,6 +375,58 @@ export const t = {
             groups: 'Homepage wählen',
             rooms: 'Räume wählen',
             social: 'Profil hinzufügen',
+        },
+    },
+
+    /** Templates (schema 1.41, Plan.md 87): saving, the block on the slide, the sheet and the page "Design". */
+    templates: {
+        /** The head of the inspector and the name of a template block in the list of layers. */
+        head: (name: string) => `Vorlage: ${name}`,
+        missing: 'Vorlage fehlt',
+        /** The page of a template that no longer exists. */
+        notFound: 'Diese Vorlage gibt es nicht (mehr).',
+        onSlides: (n: number) => `Auf ${n} ${n === 1 ? 'Folie' : 'Folien'}`,
+        editInfo: 'Änderungen erscheinen auf allen Folien mit dieser Vorlage.',
+        unlink: 'Lösen',
+        unlinkHint: 'Macht daraus eigene Bausteine nur für diese Folie.',
+        saveAs: 'Als Vorlage speichern …',
+        saveTitle: 'Als Vorlage speichern',
+        renameTitle: 'Vorlage umbenennen',
+        namePlaceholder: 'Seitenkopf',
+        blocks: (n: number) => `${n} ${n === 1 ? 'Baustein' : 'Bausteine'}`,
+        sheetTitle: 'Vorlagen',
+        /** A template fixed in place: the lock of its block cannot be taken off, only dissolved. */
+        backToDesign: 'Design',
+        fixed: 'Fest an ihrer Stelle',
+        fixedTitle: 'Fest an ihrer Stelle – zum Verschieben auf dieser Folie lösen.',
+        fixedInfo: 'Auf jeder Folie gesperrt; zum Verschieben auf einer Folie lösen.',
+        edit: {
+            /** The head of the inspector's drawer while a template is edited. */
+            title: 'Vorlage',
+            start: 'Vorlage bearbeiten',
+            bar: (name: string) => `Vorlage ${name}`,
+            onSlides: (n: number) => `auf ${n} ${n === 1 ? 'Folie' : 'Folien'}`,
+            done: 'Fertig',
+            cancel: 'Abbrechen',
+            needsBlock: 'Eine Vorlage braucht mindestens einen Baustein.',
+            conflict: (by: string | undefined) => `Inzwischen von ${by ?? 'jemand'} geändert – Abbrechen lädt den neuen Stand.`,
+            discard: 'Änderungen an der Vorlage verwerfen?',
+            blocksTitle: 'Bausteine dieser Vorlage',
+            frameLabel: 'Rahmen der Vorlage',
+            frame: 'Rahmen',
+        },
+        design: {
+            title: 'Vorlagen',
+            empty: 'Noch keine Vorlagen. Im Editor Bausteine wählen und im Kurzmenü „Als Vorlage speichern“.',
+            landscape: 'Quer',
+            portrait: 'Hochkant',
+            usedOn: (n: number) => `auf ${n} ${n === 1 ? 'Folie' : 'Folien'}`,
+            open: 'Bearbeiten',
+            openTitle: (name: string) => `Vorlage „${name}“ bearbeiten`,
+            rename: 'Umbenennen',
+            remove: 'Löschen',
+            removeQuestion: (name: string) => `Die Vorlage „${name}“ löschen?`,
+            conflict: (by: string | undefined) => `Inzwischen hat ${by ?? 'jemand'} die Vorlage geändert.`,
         },
     },
 
@@ -671,6 +724,9 @@ export const t = {
         groupOpen: 'Gruppe aufklappen',
         groupClose: 'Gruppe zuklappen',
         layerOf: (n: number, total: number) => `Ebene ${n} von ${total}`,
+        regionFixed: 'Im Bereich fest',
+        regionFixedSummary: 'im Bereich fest',
+        regionFixedInfo: 'Der Baustein hat die Größe des Bereichs der Aufteilung und bleibt dort; wechselt die Aufteilung, wandert er mit.',
         /** The list of the slide's blocks above the slide's settings (Plan.md 79, D6). */
         slideBlocks: 'Bausteine dieser Folie',
         topIsFront: 'oben = vorne',
@@ -684,6 +740,30 @@ export const t = {
         enabled: 'Anzeigen',
         runsLonger: (seconds: number) => `Läuft ${seconds} s – so lange braucht die Terminliste für alle Seiten.`,
         background: 'Hintergrund',
+        // The division of the slide (Plan.md 87 B): the summary names it in words, the tiles in one or two.
+        layout: 'Aufteilung',
+        layoutNone: 'Keine',
+        layoutHalves: 'Halb und halb',
+        layoutWideNarrowColumns: 'Zwei Drittel links',
+        layoutNarrowWideColumns: 'Zwei Drittel rechts',
+        layoutWideNarrowRows: 'Zwei Drittel oben',
+        layoutNarrowWideRows: 'Zwei Drittel unten',
+        layoutHeader: 'Kopfzeile',
+        layoutFooter: 'Fußzeile',
+        layoutSummary: {
+            none: 'Keine',
+            halvesColumns: 'Zwei Spalten',
+            halvesRows: 'Zwei Zeilen',
+            wideNarrow: 'Breit und schmal',
+            narrowWide: 'Schmal und breit',
+            withHeader: ', mit Kopfzeile',
+            withFooter: ', mit Fußzeile',
+            withBoth: ', mit Kopf- und Fußzeile',
+            /** Without a division the parts alone. */
+            onlyHeader: 'Kopfzeile',
+            onlyFooter: 'Fußzeile',
+            onlyBoth: 'Kopf- und Fußzeile',
+        },
         playlist: 'Präsentation',
         format: 'Format',
         portrait: 'Hochkant',
@@ -719,6 +799,7 @@ export const t = {
         rooms: 'Raumbelegung',
         social: 'Social Media',
         video: 'Video',
+        template: 'Vorlage',
         /** What a new text block says, and what a new countdown says while its appointment runs. */
         defaultText: 'Text',
         defaultRunningText: 'Läuft gerade',

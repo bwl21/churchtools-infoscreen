@@ -8,7 +8,7 @@
 import * as v from 'valibot';
 
 /** Bump `major` only for changes an older player cannot survive. */
-export const SCHEMA_VERSION = { major: 1, minor: 41 } as const;
+export const SCHEMA_VERSION = { major: 1, minor: 43 } as const;
 
 const Id = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 const Px = v.pipe(v.number(), v.finite());
@@ -72,6 +72,8 @@ const BlockFrame = {
      * does not care.
      */
     locked: v.optional(v.boolean()),
+    /** Since 1.42 (Plan.md 87 B): fixed in this area of the slide's division – its frame is the area's; the player ignores it. */
+    region: v.optional(v.picklist(['header', 'footer', 'main', 'a', 'b'])),
     /**
      * Since 1.29: blocks sharing a `groupId` on one slide are selected and moved together in the editor
      * (Plan.md D9). No nesting; the player draws every block on its own and ignores the field.
@@ -160,7 +162,7 @@ export const AppointmentListBlock = v.object({
     /**
      * Since 1.8: `cards` – date tile, calendar badge, title, time and place, after
      * the list of the WordPress plugin (Plan.md, 20); `rows` is the plain list.
-     * Since 1.41: `visitor` – generous rows with date/time, subtitle and a separate room column.
+     * Since 1.43: `visitor` – generous rows with date/time, subtitle and a separate room column.
      */
     layout: v.optional(v.picklist(['rows', 'cards', 'visitor'])),
     /**
@@ -439,7 +441,7 @@ export const SocialBlock = v.object({
     style: TextStyle,
 });
 
-export const Block = v.variant('type', [
+export const ContentBlock = v.variant('type', [
     TextBlock,
     ImageBlock,
     ShapeBlock,
@@ -458,6 +460,18 @@ export const Block = v.variant('type', [
     LineBlock,
     SocialBlock,
 ]);
+
+/**
+ * Since 1.41 (Plan.md 87): a template placed on a slide. Its frame is the template's – the slide decides
+ * only `x`/`y`; `width`/`height` here are a copy and not used when expanding. Older players skip it.
+ */
+export const TemplateBlock = v.object({
+    ...BlockFrame,
+    type: v.literal('template'),
+    templateId: Id,
+});
+
+export const Block = v.variant('type', [...ContentBlock.options, TemplateBlock]);
 
 /** The calendars whose appointments a block shows or counts down to. */
 export function blockCalendarIds(block: Block): number[] {
@@ -509,6 +523,17 @@ const DocumentBase = {
     updatedAt: v.optional(v.string()),
 };
 
+/**
+ * Since 1.42 (Plan.md 87 B): how the designer divides a slide into areas – a guide for placing blocks, nothing the
+ * player draws. The player ignores it. Missing = no division.
+ */
+export const SlideLayout = v.object({
+    /** Landscape divides into columns, portrait into rows. */
+    split: v.optional(v.picklist(['none', 'halves', 'wide-narrow', 'narrow-wide']), 'none'),
+    header: v.optional(v.boolean(), false),
+    footer: v.optional(v.boolean(), false),
+});
+
 export const SlideDoc = v.object({
     ...DocumentBase,
     kind: v.literal('slide'),
@@ -516,6 +541,8 @@ export const SlideDoc = v.object({
     durationSeconds: v.pipe(v.number(), v.minValue(1), v.maxValue(3600)),
     enabled: v.optional(v.boolean(), true),
     background: Background,
+    /** Since 1.42 (Plan.md 87 B); the player ignores it. */
+    layout: v.optional(SlideLayout),
     /** Array order is paint order: later blocks lie on top. */
     blocks: v.array(Block),
 });
@@ -685,6 +712,29 @@ export const ThemeDoc = v.object({
     updatedBy: v.optional(v.string()),
 });
 
+/**
+ * A template (schema 1.41, Plan.md 87): blocks made once and placed on many slides. One document in the
+ * category `playlists`, which designers write and devices read – no new rights, like `ThemeDoc`. The blocks lie
+ * relative to the top left corner of the frame (`width` x `height`); there is no template inside a template.
+ */
+export const TemplateDoc = v.object({
+    ...DocumentBase,
+    kind: v.literal('template'),
+    name: v.pipe(v.string(), v.minLength(1), v.maxLength(40)),
+    /** The format it is built for. */
+    stage: Stage,
+    width: PositivePx,
+    height: PositivePx,
+    /** Where the frame lay on the slide it was made from: a new placement starts there (a page head stays on top). */
+    x: v.optional(Px),
+    y: v.optional(Px),
+    /** Fest an ihrer Stelle: auf jeder Folie gesperrt; ändern heißt lösen. */
+    locked: v.optional(v.boolean()),
+    blocks: v.array(ContentBlock),
+    revision: v.pipe(v.number(), v.integer(), v.minValue(1)),
+    updatedBy: v.string(),
+});
+
 /** A reference to a ChurchTools file – never the file itself (Plan.md, Medien). */
 export const MediaDoc = v.object({
     ...DocumentBase,
@@ -754,6 +804,10 @@ export type GroupFields = v.InferOutput<typeof GroupFields>;
 export type RoomEntry = v.InferOutput<typeof RoomEntry>;
 export type SocialLink = v.InferOutput<typeof SocialLink>;
 export type BlockType = Block['type'];
+export type ContentBlock = Exclude<Block, { type: 'template' }>;
+export type ContentBlockType = ContentBlock['type'];
+export type TemplateDoc = v.InferOutput<typeof TemplateDoc>;
+export type SlideLayout = v.InferOutput<typeof SlideLayout>;
 export type SlideDoc = v.InferOutput<typeof SlideDoc>;
 export type PlaylistDoc = v.InferOutput<typeof PlaylistDoc>;
 export type PlaylistDraftDoc = v.InferOutput<typeof PlaylistDraftDoc>;
@@ -774,6 +828,7 @@ export type AnyDoc =
     | MediaDoc
     | SettingsDoc
     | ThemeDoc
+    | TemplateDoc
     | PlaylistDraftDoc
     | SlideDraftDoc;
 
