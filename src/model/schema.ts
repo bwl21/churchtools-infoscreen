@@ -8,7 +8,7 @@
 import * as v from 'valibot';
 
 /** Bump `major` only for changes an older player cannot survive. */
-export const SCHEMA_VERSION = { major: 1, minor: 42 } as const;
+export const SCHEMA_VERSION = { major: 1, minor: 43 } as const;
 
 const Id = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 const Px = v.pipe(v.number(), v.finite());
@@ -162,8 +162,9 @@ export const AppointmentListBlock = v.object({
     /**
      * Since 1.8: `cards` – date tile, calendar badge, title, time and place, after
      * the list of the WordPress plugin (Plan.md, 20); `rows` is the plain list.
+     * Since 1.43: `visitor` – generous rows with date/time, subtitle and a place column, the rooms before the place.
      */
-    layout: v.optional(v.picklist(['rows', 'cards'])),
+    layout: v.optional(v.picklist(['rows', 'cards', 'visitor'])),
     /**
      * Since 1.16: the booked rooms beside the place (Plan.md, Nächste Schritte 50); since 1.34 in
      * the `rows` layout as well, at the right end of the row. Missing = off.

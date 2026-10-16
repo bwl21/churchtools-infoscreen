@@ -41,7 +41,7 @@ type ListBlock = Extract<Block, { type: 'appointment-list' }>;
 type NextBlock = Extract<Block, { type: 'next-appointment' }>;
 
 /** A block's own layout wins; without one the theme decides. */
-export function listLayout(block: ListBlock, theme: ThemeDoc): 'rows' | 'cards' {
+export function listLayout(block: ListBlock, theme: ThemeDoc): 'rows' | 'cards' | 'visitor' {
     return block.layout ?? (theme.appointments === 'large' ? 'cards' : 'rows');
 }
 

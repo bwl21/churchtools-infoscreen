@@ -678,3 +678,80 @@ test('the cards of the list: date column of one width, place under the date, thr
     expect(await titleLeft()).toBeCloseTo(left, 0);
     await page.screenshot({ path: 'test-results/dienste/list-cards-long-date.png' });
 });
+
+
+test('visitor overview is offered by the appointment list and shares its rooms and paging', async ({ page }) => {
+    await page.route('**/*', (route) => {
+        const host = new URL(route.request().url()).hostname;
+        return host === '127.0.0.1' || host === 'localhost' ? route.continue() : route.abort();
+    });
+    const appointments = [
+        scheduled(19, GOTTESDIENSTE, 'Gemeindefrühstück', '2026-10-04T07:00:00Z', { subtitle: 'Herzlich willkommen', place: 'Marktplatz 1' }),
+        ...Array.from({ length: 12 }, (_, i) => scheduled(i + 20, GOTTESDIENSTE, `Veranstaltung ${i + 1}`, '2026-10-04T08:00:00Z', { subtitle: 'Gemeinsam unterwegs', place: 'Eingetragener Ort', rooms: [1] })),
+    ];
+    // A custom resource type must be chosen in the upstream settings before the visitor layout uses its rooms.
+    const types = [{ id: 7, name: 'Gemeindezentrum', nameTranslated: 'Gemeindezentrum', sortKey: 10 }, TYPES[1]!];
+    const rooms = [{ id: 1, name: 'Saal', nameTranslated: 'Saal', sortKey: 10, resourceTypeId: 7 }, ROOMS[3]!];
+    await fakeChurch(page, { types, rooms, bookingRequests: [], scene: { now: NOW, appointments, eventStart: '2026-10-04T08:00:00Z' } });
+    await page.goto('./einstellungen');
+    await expect(page.getByTestId('settings-card-rooms')).toContainText('Kein Typ gewählt');
+    await page.getByTestId('settings-card-rooms').click();
+    await expect(page.getByTestId('room-types-missing')).toBeVisible();
+    await page.getByRole('checkbox', { name: /Gemeindezentrum/ }).check();
+    await page.getByTestId('settings-save').click();
+    await page.getByTestId('confirm-ok').click();
+    await expect(page.getByTestId('settings-saved')).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('checkbox', { name: /Gemeindezentrum/ })).toBeChecked();
+    await newBlock(page, 'appointment-list');
+    await expect(page.getByTestId('section-appearance')).not.toHaveAttribute('open');
+    await openSection(page, 'appearance');
+    await expect(page.getByTestId('list-layout').getByText(/^Besucher\u00ad?übersicht$/)).toBeVisible();
+    await choose(page, 'list-layout', 'visitor');
+    await page.getByTestId('section-appearance-toggle').click();
+    await expect(page.getByTestId('section-appearance-toggle')).toContainText('Besucherübersicht · 14 Tage');
+    await openSection(page, 'appearance');
+    await page.getByTestId('list-days').fill('1');
+    await page.getByTestId('list-days').blur();
+    await page.getByTestId('section-appearance-toggle').click();
+    await expect(page.getByTestId('section-appearance-toggle')).toContainText('Besucherübersicht · 1 Tag');
+    await openSection(page, 'appearance');
+    await page.getByTestId('list-days').fill('14');
+    await page.getByTestId('list-days').blur();
+    await openSection(page, 'measures');
+    for (const [key, value] of Object.entries({ x: 60, y: 60, width: 1800, height: 960 })) {
+        await page.getByTestId(`inspector-${key}`).fill(String(value));
+        await page.getByTestId(`inspector-${key}`).blur();
+    }
+    await page.getByTestId('show-all').check();
+    const preview = stage(page).locator('.paged--visitor');
+    await expect(preview.getByTestId('list-visitor-row').first()).toContainText('Gemeindefrühstück');
+    // Rooms before the place: without a room the place stands, with one only the room.
+    await expect(preview.getByTestId('list-visitor-room').first()).toHaveText('Marktplatz 1');
+    await expect(preview.getByTestId('list-visitor-row').nth(1)).toContainText('Gemeinsam unterwegs');
+    await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('Saal');
+    await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveCSS('text-align', 'right');
+    await expect(preview).not.toContainText('Eingetragener Ort');
+    await expect(preview.getByTestId('list-visitor-pager')).toBeVisible();
+    // Existing room choices affect the names, never the appointments.
+    const count = await preview.getByTestId('list-visitor-row').count();
+    await page.getByTestId('show-rooms').uncheck();
+    await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('Eingetragener Ort');
+    await expect(preview.getByTestId('list-visitor-row')).toHaveCount(count);
+    await page.getByTestId('show-rooms').check();
+    await expect(preview.getByTestId('list-visitor-room').nth(1)).toHaveText('Saal');
+    // Put the selected slide first, regardless of where new slides are inserted.
+    await nudgeRow(page.locator('[data-testid="slide-item"].active').getByTestId('slide-handle'), 'ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await page.getByTestId('save').click();
+    await expect(page.getByTestId('save-status')).toHaveText('Veröffentlicht');
+    await page.clock.install({ time: NOW });
+    await page.goto('./player?screen=demo');
+    const player = page.getByTestId('player').locator('.paged--visitor');
+    await expect(player.getByTestId('list-visitor-pager')).toHaveAttribute('aria-label', /^Seite 1 von/);
+    await expect(player.getByTestId('list-progress')).toBeVisible();
+    await page.clock.fastForward(10_500);
+    await expect(player.getByTestId('list-visitor-pager')).toHaveAttribute('aria-label', /^Seite 2 von/);
+    await expect(player.locator('.segment-fill')).toHaveCount(1);
+});

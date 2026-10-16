@@ -16,8 +16,8 @@ export function showsAppointmentRooms(block: Block): boolean {
 }
 
 /** Whether a list shows rooms in the layout it really has: lists from before 1.34 (`roomsInRows: false`) only as cards. */
-export function roomsShownInLayout(block: { showRooms?: boolean; roomsInRows?: boolean }, layout: 'rows' | 'cards'): boolean {
-    return block.showRooms === true && (layout === 'cards' || block.roomsInRows !== false);
+export function roomsShownInLayout(block: { showRooms?: boolean; roomsInRows?: boolean }, layout: 'rows' | 'cards' | 'visitor'): boolean {
+    return block.showRooms === true && (layout !== 'rows' || block.roomsInRows !== false);
 }
 
 export function needsAppointmentRooms(blocks: readonly Block[]): boolean {

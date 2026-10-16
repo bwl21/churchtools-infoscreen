@@ -186,6 +186,15 @@ export function placeLine(appointment: { location: string | null }, roomNames: r
 }
 
 /**
+ * The right column of the visitor overview: the rooms first, the place where none is named. There a visitor looks
+ * for the way through the house, and a place like the church's name would stand alike on every line – the other way
+ * round from `placeLine`. `roomNames`: the rooms this block names; null when there is nothing to say.
+ */
+export function visitorPlace(appointment: { location: string | null }, roomNames: readonly string[]): string | null {
+    return roomNames.join(', ') || appointment.location || null;
+}
+
+/**
  * The service line of an appointment: "Predigt: Anna Beispiel · Moderation: Ben Muster, Cora Test".
  * Only the services this block chose, in the order of the appointment's own list; null when there
  * is nothing to say (Plan.md, Nächste Schritte 51).
