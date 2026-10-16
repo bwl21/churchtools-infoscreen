@@ -31,9 +31,16 @@ Zusammenfassung nennt weiterhin „Besucherübersicht“ und nutzt zugleich die 
 „1 Tag“/„14 Tage“. Schema bleibt 1.41 (Upstream 1.40). Der gezielte Chromium-Test prüft beide
 Tagesformen zusätzlich zur Darstellung, Raumtypen-Auswahl und Seitenschaltung. Typprüfung bestanden;
 Lint ohne Fehler (zwei bestehende Warnungen); 1369 Unit-Tests bestanden, sieben ohne Fixtures
-übersprungen. Der separat freigegebene lokale Chromium-Test ist bestanden. Kein `.env`-Laden, kein Proxy und externe Anfragen gesperrt. Die bisherigen Installationspakete
-enthalten diesen Merge noch nicht. Vor einem Merge des PR stehen die betroffenen e2e-Dateien vollständig
-in Chromium und WebKit sowie die Dokumentationsbilder-Prüfung noch aus. Noch nicht veröffentlicht.
+übersprungen. Der separat freigegebene lokale Chromium-Test ist bestanden. Kein `.env`-Laden,
+kein Proxy und externe Anfragen gesperrt. Installationspaket mit dem lokalen Merge:
+`releases/churchtools-infoscreen-v0.26.0-6a5ff14.zip` (Build und ZIP geprüft; der Zusatz `dirty`
+bezeichnet ausschließlich das damals noch uncommittete Testprotokoll). Abschlussprüfung am 2026-10-16 bestanden: `e2e/rooms.spec.ts`
+vollständig in Chromium und WebKit (36 Tests), Dokumentationsbilder-Prüfung in Chromium (2 Tests).
+Dafür wurden die Testdateien mit einer temporären Browser-Fixture ausgeführt, die externe Anfragen
+blockiert; Bilder gingen ausschließlich nach `/tmp/infoscreen-abschluss/bilder`, ohne die
+Dokumentationsbilder im Repository zu überschreiben. Besucherübersicht visuell geprüft. Berichte:
+`/tmp/infoscreen-abschluss/rooms.log` und `/tmp/infoscreen-abschluss/docs.log`. Keine Instanzzugriffe,
+kein `.env`-Laden und kein Proxy. Merge und Abschlussprüfung für PR #111 vorbereitet; kein Merge des PR und kein Release.
 
 ## Auf einen Blick
 
