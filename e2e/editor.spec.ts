@@ -358,12 +358,17 @@ test.describe('with a finger, in both browsers', () => {
         expect(overflow).toBeLessThanOrEqual(0);
     }
 
-    test('the header fits in one line, and "…" replaces Vorschau/Player (Plan.md 44, M2)', async ({ page }) => {
+    test('the header puts the title in a row of its own, and "…" replaces Vorschau/Player (Plan.md 44, M2)', async ({ page }) => {
         await page.goto('./');
         await page.getByTestId('open-editor').first().click();
         await expect(page.getByTestId('phone-slides')).toContainText('von 3');
         const bar = (await page.locator('.d-appbar').boundingBox())!;
-        expect(bar.height).toBeLessThanOrEqual(100);
+        expect(bar.height).toBeLessThanOrEqual(120);
+        // Below the way back, flush with it, so it can be read (user, 2026-10-17).
+        const back = (await page.getByTestId('leave-editor').boundingBox())!;
+        const title = (await page.locator('.d-appbar .heading').boundingBox())!;
+        expect(title.y).toBeGreaterThanOrEqual(back.y + back.height);
+        expect(Math.abs(title.x - back.x)).toBeLessThanOrEqual(1);
         await expect(page.getByTestId('save')).toBeVisible();
         await expect(page.getByTestId('editor-more')).toBeVisible();
         await expect(page.getByTestId('open-preview')).not.toBeVisible();
@@ -378,6 +383,30 @@ test.describe('with a finger, in both browsers', () => {
         await expect(page.getByTestId('preview-controls')).toHaveCSS('opacity', '1');
         await page.getByTestId('preview-controls').getByRole('button', { name: /Schließen/ }).tap();
         await expect(page.getByTestId('playlist-preview')).toHaveCount(0);
+    });
+
+    test('an upright slide stays whole above the row of a chosen block, and does not move (user, 2026-10-17)', async ({ page }) => {
+        // A new portrait screen is made at the desktop's width, then edited on the phone.
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto('./');
+        await page.getByTestId('new-screen').click();
+        await page.getByTestId('new-name').fill('Foyer Hochkant');
+        await page.getByTestId('create-dialog').getByText('Hochkant').click();
+        await page.getByTestId('create').click();
+        await expect(page).toHaveURL(/playlists\/[\w-]+$/);
+        await addBlock(page, 'text');
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.reload();
+        const stage = page.locator('.editor-stage .stage');
+        await expect(stage).toBeVisible();
+        const before = (await stage.boundingBox())!;
+        await page.getByTestId('frame-text').first().tap();
+        await expect(page.getByTestId('phone-block-row')).toBeVisible();
+        const after = (await stage.boundingBox())!;
+        expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+        expect(Math.abs(after.height - before.height)).toBeLessThanOrEqual(1);
+        const row = (await page.getByTestId('phone-block-row').boundingBox())!;
+        expect(after.y + after.height).toBeLessThanOrEqual(row.y);
     });
 
     test('"+ Baustein" opens a sheet with every block, and the inspector is its own sheet on request (Plan.md 44, M3, M4; 79, C2)', async ({ page }) => {
@@ -2283,9 +2312,10 @@ test.describe('the bar of the editor stands flush with the cards (third round of
         const inspector = (await page.getByTestId('inspector-sheet').boundingBox())!;
         expect(Math.abs(back.x - slides.x)).toBeLessThanOrEqual(1);
         expect(Math.abs(save.x + save.width - (inspector.x + inspector.width))).toBeLessThanOrEqual(1);
-        // The title and the state of the save stand in the middle of the window.
+        // The title and the state of the save start flush with "+ Baustein", not beside "Hilfe" (user, 2026-10-17).
         const title = (await page.locator('.d-appbar .heading').boundingBox())!;
-        expect(Math.abs(title.x + title.width / 2 - 1440 / 2)).toBeLessThanOrEqual(2);
+        const add = (await page.getByTestId('add-block-menu').boundingBox())!;
+        expect(Math.abs(title.x - add.x)).toBeLessThanOrEqual(1);
         // Nothing overlaps: back, title, actions in a row.
         expect(back.x + back.width).toBeLessThanOrEqual(title.x);
         expect(title.x + title.width).toBeLessThanOrEqual((await page.getByTestId('save').boundingBox())!.x);
