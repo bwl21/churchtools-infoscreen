@@ -23,7 +23,7 @@ brechen um, nichts wird abgeschnitten.
 ## Der Editor
 
 Folien gestalten wie in einem Folienprogramm: links die Folien, oben „+ Baustein", in der
-Mitte die Bildfläche, rechts der Inspektor: oben der Inhalt des gewählten Bausteins, darunter aufklappbare Bereiche.
+Mitte die Bildfläche, rechts der Inspektor: oben der Inhalt des gewählten Bausteins, darunter aufklappbare Bereiche – offen ist immer nur einer, nur „Bausteine dieser Folie" bleibt daneben stehen.
 „+ Baustein" nennt zu jedem Baustein in einem Satz, was er zeigt, und hat ein Suchfeld („kalender" findet die
 Terminliste). Ziehen, an den Griffen skalieren, am Raster ausrichten, sperren, rückgängig machen. **Beim Ziehen zeigt die Bildfläche die Abstände** zu den Nachbarn und zum Rand in Orange, dazu die Größe; kommt ein Abstand einem schon vorhandenen nahe, rastet er ein, und beide gleichen Abstände sind markiert. Mit gedrückter Alt-Taste über einem anderen Baustein stehen die Abstände zwischen beiden. **Kopieren, Einfügen, Duplizieren** gehen mit Strg/⌘ + C, V, D oder den Knöpfen im Inspektor und neben „+ Baustein" – eingefügt wird an derselben Stelle, auch auf einer anderen Folie. Alle Tastengriffe zeigt „?" oben im Editor.
 
@@ -359,11 +359,12 @@ dabei aussparen („Nur unbenutzte löschen").
 ## Design
 
 Einmal für alle Bildschirme: Ecken, Akzentfarbe, Farben und Schrift für neue Bausteine, Termine schlicht oder als Karten,
-das Format der Bilder – mit Vorschau. Dazu eine **Farbpalette**: bis zu zwölf Farben der Gemeinde mit Namen
+das Format der Bilder – mit Vorschau. Die Einstellungen stehen in vier Klappmenüs – **Farben**, **Ecken und Karten**,
+**Schrift** und **Termine** –, die zugeklappt in Worten sagen, was eingestellt ist; offen ist immer nur eins. Dazu eine **Farbpalette**: bis zu zwölf Farben der Gemeinde mit Namen
 („Gemeindeblau"), in einer Reihenfolge, die ihr selbst bestimmt. Der **Kartenhintergrund** – leicht getönt, ohne oder
 in einer eigenen Farbe mit Deckkraft – gilt für die Karten von „Nächster Termin" (Form „Modern"), „Beiträge" und
 „Gruppen" sowie die Tür-Anzeige der Raumbelegung. Unter **„Vorlagen"** stehen die [Vorlagen](#vorlagen) zum Bearbeiten,
-Umbenennen und Löschen.
+Umbenennen und Löschen – in einer eigenen Karte, weil sie sofort wirken und nicht mit „Speichern" oben gespeichert werden.
 
 ![Design: Einstellungen links, Vorschau rechts](bilder/design.png)
 

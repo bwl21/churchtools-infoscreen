@@ -380,7 +380,9 @@ test('pictures for the documentation', async ({ page, baseURL }) => {
 
     // The look first: large appointments, so that the pictures show the cards.
     await page.goto('design');
+    await openSection(page, 'design-appointments');
     await page.getByTestId('appointments-large').check();
+    await openSection(page, 'design-colors');
     // Two of the church's colours with names: the palette shows on the page, the swatches in the editor (Plan.md 64).
     for (const [i, [name, hex]] of [['Gemeindeblau', '#1d4ed8'], ['Sonnengelb', '#f5b301']].entries()) {
         await page.getByTestId('palette-add').click();
@@ -391,6 +393,7 @@ test('pictures for the documentation', async ({ page, baseURL }) => {
     }
     await page.getByTestId('theme-save').click();
     await expect(page.getByTestId('theme-saved')).toBeVisible();
+    // Only the colours stand open – opening them folded the appointments: the palette shows, the other three their summary (Plan.md 89).
     await shoot(page, 'design');
 
     // A second screen, upright, with a countdown and a picture from the media library.
@@ -485,8 +488,8 @@ test('pictures for the documentation', async ({ page, baseURL }) => {
     await addBlock(page, 'rooms');
     await frame(page, { x: 160, y: 140, width: 1600, height: 800 });
     await page.getByTestId('rooms-add-all').click();
-    await openSection(page, 'room-list');
     await openSection(page, 'appearance');
+    await openSection(page, 'room-list');
     await page.getByTestId('room-entry').nth(0).getByTestId('room-hint').fill('Erdgeschoss');
     await page.getByTestId('room-entry').nth(1).getByTestId('room-hint').fill('1. OG, links');
     await page.getByTestId('room-entry').nth(2).getByTestId('room-hint').fill('Untergeschoss');
@@ -540,8 +543,8 @@ test('pictures for the documentation', async ({ page, baseURL }) => {
     await page.getByTestId('grid').click({ position: { x: 5, y: 5 } });
     await addBlock(page, 'shape');
     await frame(page, { x: 1320, y: 300, width: 420, height: 420 });
-    await inspector.getByRole('button', { name: 'Sonnengelb (#F5B301)' }).first().click();
     await openSection(page, 'appearance');
+    await inspector.getByRole('button', { name: 'Sonnengelb (#F5B301)' }).first().click();
     await inspector.getByTestId('shape-corners').fill('32');
     await inspector.getByTestId('shape-corners').blur();
     await openSection(page, 'frame-look');
