@@ -1552,6 +1552,7 @@ test('a posts block shows a public group\'s posts, as a card and as a list (Plan
     await inspector.getByTestId('inspector-width').fill('1400');
     await inspector.getByTestId('inspector-height').fill('700');
     await inspector.getByTestId('inspector-height').blur();
+    await openSection(page, 'fields');
     const showImage = inspector.getByTestId('posts-image');
     await showImage.uncheck();
     await expect(card.getByTestId('post-image')).toHaveCount(0);
@@ -1559,6 +1560,7 @@ test('a posts block shows a public group\'s posts, as a card and as a list (Plan
     await card.screenshot({ path: `test-results/posts-card-text.png` });
     await showImage.check();
 
+    await openSection(page, 'appearance');
     await choose(inspector, 'posts-layout', 'list');
     await expect(stage.getByTestId('posts-list')).toBeVisible();
     await expect(stage.getByTestId('post-row').first()).toBeVisible();
@@ -1614,6 +1616,7 @@ test('a groups block shows a group homepage\'s groups, as a card and as a list (
     await inspector.getByTestId('inspector-width').fill('1600');
     await inspector.getByTestId('inspector-height').fill('900');
     await inspector.getByTestId('inspector-height').blur();
+    await openSection(page, 'appearance');
     await choose(inspector, 'groups-per-page', '2');
     await expect(groupCard.first()).toHaveClass(/hero--portrait/);
     const shownCards = await groupCard.count();
@@ -1631,6 +1634,7 @@ test('a groups block shows a group homepage\'s groups, as a card and as a list (
     await expect(inspector.getByTestId('group-show-leaderImages')).toBeEnabled();
     await inspector.getByTestId('group-show-leaderImages').check();
     // One to four a page, for comparing them side by side (third test, 2026-09-29).
+    await openSection(page, 'appearance');
     for (const perPage of ['1', '2', '3', '4']) {
         await choose(inspector, 'groups-per-page', perPage);
         await page.waitForTimeout(600);
