@@ -106,6 +106,25 @@ describe('HelpBar (Plan.md 98)', () => {
         expect(wrapper.find('[data-testid="help-empty"]').exists()).toBe(true);
     });
 
+    it('finds the help of other blocks below the own hits, as when only the slide is chosen (Plan.md 98, D)', async () => {
+        sectionState.calendars = true;
+        const { wrapper, register } = page();
+        await nextTick();
+        register.toggleStart();
+        await nextTick();
+        await wrapper.get('[data-testid="help-search"]').setValue('schriftart');
+        expect(wrapper.find('[data-testid="help-empty"]').exists()).toBe(false);
+        expect(wrapper.get('[data-testid="help-group-elsewhere"]').text()).toBe('Bei anderen Bausteinen');
+        expect(wrapper.get('[data-testid="help-hit-all-font"]').text()).toContain('Schriftart');
+        expect(wrapper.find('[data-testid^="help-tab-"]').exists()).toBe(false);
+        expect(wrapper.get('[data-testid="help-hit-all-font"] mark').text()).toBe('Schriftart');
+        // The topic named like the search comes first, a mere mention ("Text": "die Schrift kleiner stellen") after it.
+        await wrapper.get('[data-testid="help-search"]').setValue('schrift');
+        const order = wrapper.findAll('[data-testid^="help-hit-all-"]').map((w) => w.attributes('data-testid'));
+        expect(order.indexOf('help-hit-all-font')).toBe(0);
+        expect(order.indexOf('help-hit-all-text')).toBeGreaterThan(0);
+    });
+
     it('closes with the ✕ and forgets the search', async () => {
         sectionState.calendars = true;
         const { wrapper, register } = page();

@@ -773,6 +773,9 @@ test.describe('at a desktop the two columns fold (Plan.md 45)', () => {
         await expect(page.getByTestId('tablet-slides-toggle')).toHaveAttribute('aria-expanded', 'false');
         await expect.poll(() => stageWidth(page)).toBeGreaterThan(open);
         const slidesFolded = await stageWidth(page);
+        // The way back is wider than the folded rail: it pushes the title aside instead of reaching into it (user, 2026-10-20).
+        const [back, title] = await Promise.all([page.getByTestId('leave-editor').boundingBox(), page.locator('.d-appbar .middle').boundingBox()]);
+        expect(back!.x + back!.width).toBeLessThanOrEqual(title!.x);
 
         await page.getByTestId('desktop-inspector-collapse').click();
         await expect(page.getByTestId('inspector-sheet')).not.toBeVisible();
@@ -1580,6 +1583,7 @@ test('a groups block shows a group homepage\'s groups, as a card and as a list (
 
     await addBlock(page, 'groups');
     const inspector = page.getByTestId('block-inspector');
+    await openSection(page, 'group-list');
     const homepageSelect = inspector.getByTestId('groups-homepage');
     // The title carries a non-breaking space ("Gottesdienst | Gottesdienste") – matched by part of the text, not by label.
     await homepageSelect.click();
@@ -1741,6 +1745,38 @@ test('an explanation stays behind the "?" of its section until asked for, and Es
     await page.keyboard.press('Escape');
     await expect(bar).toHaveCount(0);
     await expect(page.getByTestId('block-inspector')).toBeVisible();
+});
+
+test('the text block explains itself: "Allgemein" from the head, one tab per section, the first sentence as tip (Plan.md 98, D)', async ({ page }) => {
+    await page.goto('./');
+    await page.getByTestId('open-editor').first().click();
+    await addBlock(page, 'text');
+    // The bar lies over the stage: the slide keeps its size (user, 2026-10-20).
+    const stage = page.locator('.stage-column > .editor-stage');
+    const before = await stage.boundingBox();
+    await page.getByTestId('inspector-help').click();
+    await expect(page.getByTestId('help-tab-general')).toHaveAttribute('aria-selected', 'true');
+    const bar = page.getByTestId('help-bar');
+    const height = (await bar.boundingBox())!.height;
+    await page.getByTestId('help-tab-font').click();
+    expect(await stage.boundingBox()).toEqual(before);
+    // One height for every topic and every search.
+    expect((await bar.boundingBox())!.height).toBe(height);
+    await page.getByTestId('help-search').fill('gibtesnicht');
+    expect((await bar.boundingBox())!.height).toBe(height);
+    await page.getByTestId('help-search').fill('');
+    await page.getByTestId('help-tab-general').click();
+    // "Allgemein" opens with the sentence of the "+ Baustein" sheet; the tab names the topic, the panel does not repeat it.
+    await expect(page.getByTestId('help-panel')).toContainText('Überschrift, Untertitel oder ein paar Zeilen.');
+    await expect(page.getByTestId('help-panel').locator('h3')).toHaveCount(0);
+    await expect(page.getByTestId('help-panel')).toContainText('Doppelklick auf den Text');
+    const tabs = await page.locator('[data-testid^="help-tab-"]').evaluateAll((els) => els.map((el) => el.getAttribute('data-testid')));
+    expect(tabs).toEqual(['help-tab-general', 'help-tab-font', 'help-tab-frame-look', 'help-tab-arrange', 'help-tab-measures']);
+    await expect(page.locator('[data-tip="Die Schriftgröße in Bildpunkten der Folie."]')).toHaveCount(1);
+    // A block without loose fields has its "Allgemein" too.
+    await addBlock(page, 'shape');
+    await expect(page.getByTestId('help-tab-general')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('help-panel')).toContainText('Eine farbige Fläche, etwa hinter einem Text.');
 });
 
 test('the block is layered from the "Anordnen" section and deleted from its header (Plan.md 47, 79)', async ({ page }) => {
@@ -2012,6 +2048,7 @@ test('a groups block sorts every group by weekday, name A–Z or Z–A, until a 
     await page.getByTestId('add-slide').click();
     await addBlock(page, 'groups');
     const inspector = page.getByTestId('block-inspector');
+    await openSection(page, 'group-list');
     await choose(inspector, 'groups-homepage', '40');
     await openSection(page, 'appearance');
     await choose(inspector, 'groups-layout', 'list');

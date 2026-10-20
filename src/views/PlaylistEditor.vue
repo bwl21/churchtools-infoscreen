@@ -82,7 +82,7 @@ const help = provideHelp(() => {
     if (editor.block) return editor.blockHead(editor.block);
     if (editor.selection.length > 1) return editor.groupSelected ? t.editor.groupCount(editor.selection.length) : t.editor.blocksCount(editor.selection.length);
     return editor.templateEdit ? t.templates.head(editor.templateEdit.name) : t.help.slide;
-});
+}, () => (editor.block && editor.block.type !== 'template' ? `${t.editor.palette.descriptions[editor.block.type]}.` : undefined));
 
 /** The services an administrator allows on screens (Plan.md 58); none until loaded, and where the settings cannot be read. */
 const allowedServices = ref<number[]>([]);
@@ -1022,7 +1022,7 @@ function onKey(event: KeyboardEvent): void {
                 <IntroCard v-if="showIntroCard" @start="startIntro" @later="markIntroSeen" @close="markIntroSeen" />
                 <BlockPalette />
                 <EditorStage @all-settings="showAllSettings" @open-content="openContent" @open-more="openMore" />
-                <!-- Plan.md 98: below the slide, in the column of the stage; on a phone it is a sheet from below instead. -->
+                <!-- Plan.md 98: over the lower part of the stage, so the slide does not jump; on a phone it is a sheet from below instead. -->
                 <HelpBar />
             </div>
             <!-- Below 48rem and upright above it this becomes a sheet at the bottom; otherwise a column beside the stage (Plan.md 44, M4; 45). -->
@@ -1363,13 +1363,21 @@ function onKey(event: KeyboardEvent): void {
 .stage-column > .editor-stage {
     flex: 1;
 }
-/* The help bar is a card like the slides and the inspector and ends on their line below; 12 px from the stage, whose own
-   margin gives 8 of them. At most 48rem wide and centred under the slide: across a wide monitor it would be heavy, and the
-   lines stay readable without making the text so narrow that it scrolls long (it is a sheet outside the flow on a phone). */
+/* The help bar lies over the lower part of the stage, a card that ends on the line of the slides and the inspector below: out of
+   the flow, so the slide keeps its size whatever the topic's length (user, 2026-10-20). At most 48rem wide and centred – across
+   a wide monitor it would be heavy. One height for every topic and every search, so the bar does not jump either (user,
+   2026-10-20): a little over half the column, at most 26rem; longer topics scroll inside. Above the stage's own layers, below
+   the introduction card (it is a sheet outside the flow on a phone). */
 .stage-column :deep(.help-bar:not(.help-bar--sheet)) {
-    align-self: center;
-    width: min(100%, 48rem);
-    margin: calc(var(--d-space-3) - var(--d-space-2)) 0 0;
+    position: absolute;
+    z-index: 25;
+    bottom: 0;
+    left: 50%;
+    width: min(100% - 2 * var(--d-space-3), 48rem);
+    height: min(55%, 26rem);
+    max-height: none;
+    transform: translateX(-50%);
+    box-shadow: var(--d-shadow);
 }
 /* The bar over the stage while a template is edited (Plan.md 87). */
 .template-bar {
