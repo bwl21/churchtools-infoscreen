@@ -89,7 +89,7 @@ seine Datenablage in ChurchTools an.
 
 ## 4. Gruppen und Rechte anlegen lassen
 
-Ein Assistent im Designer legt die Gruppen für Gestalter und Geräte samt allen Rechten an:
+Ein Assistent im Designer legt die Gruppen für Gestalter, Geräte und den Baustein „Personen“ samt allen Rechten an:
 
 1. **Einstellungen → Räume:** prüfen, welche Ressourcentypen als Raum gelten. Gibt es bei euch den Typ „Raum", ist
    er vorgewählt und nichts zu tun. Sonst die passenden Typen ankreuzen und **„Speichern"**.
@@ -99,8 +99,8 @@ Ein Assistent im Designer legt die Gruppen für Gestalter und Geräte samt allen
    ([Academy: Gruppentypen](https://churchtools.academy/de/help/app/rund-ums-gruppenmodul/37-was-sind-gruppentypen-und-wofur-kann-ich-sie-benutzen/)).
 4. **„Gruppen und Rechte anlegen"** klicken.
 
-Es entstehen zwei leere Gruppen: **„Infoscreen-Designer"** für die Gestalter und **„Infoscreen-Devices"** für die
-Fernseher. Dazu kommt der Wiki-Bereich **„Infoscreen"**, in dem die Bilder der Mediathek liegen. Was genau welche
+Es entstehen drei Gruppen: **„Infoscreen-Designer"** für die Gestalter, **„Infoscreen-Devices"** für die
+Fernseher und **„Infoscreen-People"** für den Baustein „Personen“ ([unten](#personen-auf-den-bildschirmen)). Dazu kommt der Wiki-Bereich **„Infoscreen"**, in dem die Bilder der Mediathek liegen. Was genau welche
 Gruppe darf, steht unter „Was genau passiert" auf der Seite und in der [Rechte-Übersicht](Rechte.md).
 
 **Bildschirme anlegen:** auf der Startseite des Designers **„+ Bildschirm erstellen"**, je Fernseher einer. Name und
@@ -124,6 +124,41 @@ Overscan änderst du später über **„…"** an der Kachel.
   Die Seite prüft dann, was ihnen fehlt, ändert aber selbst nichts.
 - **Zurücknehmen:** „Automatische Einrichtung rückgängig machen" löscht nur die Gruppen, die der Assistent selbst
   angelegt hat (siehe [Den Designer wieder entfernen](#den-designer-wieder-entfernen)).
+
+### Personen auf den Bildschirmen
+
+Der Baustein **„Personen“** zeigt Karten mit Name, Bild und ausgewählten Angaben – Ansprechpartner im Foyer, Zimmernummern
+auf einer Freizeit. Er liest **nur** die Gruppe **„Infoscreen-People"**:
+
+- **Wer in der Gruppe ist, darf erscheinen.** Die Mitgliedschaft ist die Freigabe: Nimm nur Personen auf, die damit
+  einverstanden sind. Ihre **Rolle** in der Gruppe kann der Baustein auswählen (etwa nur „Leiter").
+- **Angaben** kommen aus **Mitgliedsfeldern der Gruppe**. Lege sie in ChurchTools an der Gruppe an (Gruppe → Einstellungen →
+  Mitgliedsfelder, etwa „Funktion“, „Büro“) und trage die Werte je Mitglied ein. Der Fernseher sieht Felder **bis Sicherheitsstufe 1**; Felder mit
+  höherer Stufe bleiben für ihn verborgen. Die Stufe ist dein Regler.
+- **Die Geräte müssen Mitglied der Gruppe sein**, sonst bleiben die Mitgliedsfelder leer. Der Assistent nimmt die
+  Konten der Gerätegruppe auf, die schon da sind; ein **neues Gerätekonto** nimmst du ebenfalls in „Infoscreen-People"
+  auf – oder klickst **„Rechte aktualisieren"**, das holt alle Geräte nach. Die Geräte erscheinen nicht als Karten: Der Assistent
+  merkt sich ihre Konten in den Einstellungen und der Fernseher lässt sie weg. Ein **neues Gerätekonto** gehört in
+  „Infoscreen-Devices" **und** in „Infoscreen-People"; „Rechte aktualisieren" erledigt beides nach und aktualisiert die Liste.
+- **Name, Bild und Rolle** sieht das Gerät über das Recht „Gruppe inkl. ihrer Gruppenmitglieder sehen“ für genau diese
+  Gruppe; die **Mitgliedsfelder** über „Gruppenmitgliedsfelder sehen“ (Stufe 1) an der Standardrolle der Gruppe. Das
+  Recht gilt für **alle Mitglieder dieser Rolle** – was dort an Mitgliedsfeldern mit Stufe 1 steht, ist für den
+  Bildschirm bestimmt. Die Prüfung der Gerätegruppe kennt beide Rechte.
+- **E-Mail-Adressen und andere Kontaktdaten zeigt der Baustein nicht.** Gib dem Gerät **nie** „Personendaten sehen“ oder
+  „Gruppenmitglieder sehen“: Beide geben schon in der ersten Sicherheitsstufe die E-Mail-Adresse frei, und wer die
+  Adresse eines Fernsehers kennt, liest sie mit. Die Prüfung warnt davor.
+- **Beiträge sind in „Infoscreen-Devices“ und „Infoscreen-People“ abgeschaltet.** Der Gruppentyp „Merkmal“ gäbe den
+  Konten dort sonst das Recht, Beiträge zu schreiben, und niemand liest sie dort. Der Assistent schaltet sie bei der
+  Einrichtung ab, auch beim Nachrüsten; bei einer älteren Einrichtung holt „Rechte aktualisieren“ das nach (die Vorschau
+  nennt es). Nur Gruppen, die der Assistent angelegt hat, fasst er an – eigene Gruppen nie. Die Lebenszeichen und der
+  Baustein „Beiträge“ brauchen diese Gruppen nicht.
+- **Automatische Gruppen?** Eine Gruppe mit der Aktion „Aus Gruppe entfernen“ wirft von Hand aufgenommene Mitglieder beim
+  nächsten Lauf wieder hinaus – auch das Gerät. Nimm „Infoscreen-Devices“ als Oder-Bedingung in den Filter auf, dann
+  wird das Gerät von selbst Mitglied. Stück 1 des Bausteins arbeitet mit der Gruppe „Infoscreen-People“; eigene Gruppen folgen.
+- **Bestehende Installation:** Wer schon eingerichtet hat, findet unter **Einstellungen → Gruppen und Rechte** den Knopf
+  **„Gruppe „Infoscreen-People“ nachrüsten"**. Eine Vorschau sagt vorher, was geschieht: Er legt nur diese Gruppe an,
+  gibt ihr und der Gerätegruppe die beiden Rechte und nimmt die Geräte auf. Bestehende Rollen, Rechte und fremde Gruppen
+  bleiben unberührt.
 
 ## 5. Gestalter aufnehmen
 
@@ -247,6 +282,12 @@ Mehr als lesen konnte das Gerät nie.
   sein darf.
 - **Gruppen und Beiträge** zeigt der Designer nur, soweit ChurchTools sie ohnehin öffentlich zeigt. Namen von
   Leitung und Autoren erscheinen nur, wenn ein Gestalter sie einschaltet.
+- **Personen** zeigt der Baustein „Personen“ nur aus der Gruppe „Infoscreen-People“: Name, Bild, Rolle und die gewählten
+  Mitgliedsfelder – wer dort Mitglied ist, erscheint (und wer mit dem Baustein arbeitet, braucht sein Einverständnis).
+  **Wer die Adresse eines Fernsehers kennt, kann dieselben Angaben der Gruppe auch selbst abrufen**, nicht nur ansehen:
+  Das Konto des Fernsehers darf sie lesen. Trage in Mitgliedsfelder nichts ein, was nicht in den Flur gehört, und stelle
+  sie auf Sicherheitsstufe 1 nur, wenn sie öffentlich sein dürfen. Das Gerät erhält **nie** E-Mail-Adresse, Telefon oder
+  Anschrift der Personen.
 - **Eine eingebettete Webseite ist ein Aufruf bei Dritten:** Ihr Betreiber erfährt die Internetadresse des Geräts.
   Bettet nur ein, was ihr auch auf eurer Website einbetten würdet.
 - **Schriften kommen von eurer eigenen Instanz**, nicht von einem fremden Dienst.

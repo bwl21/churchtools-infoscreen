@@ -45,6 +45,9 @@ import {
     defaultGroupTypeId,
     planProvisioning,
     provision,
+    provisionPeople,
+    completePeople,
+    orphanPeopleGroup,
     applyRefresh,
     readRefresh,
     refreshIsEmpty,
@@ -54,8 +57,10 @@ import {
     removeCreatedGroups,
     type GroupSpec,
     type GroupTypeChoice,
+    type PlanInput,
 } from '../setup/provision';
 import { isAdministrator } from '../designer/administrator';
+import { maySaveSettings, type ModulePermissions } from '../designer/rights';
 import { useConfirm } from '../designer/useConfirm';
 import { getRepository } from '../store/backend';
 import { CATEGORIES, STATUS_CATEGORY, type CategoryKey, type ScreenRepository } from '../store/screen-repository';
@@ -172,6 +177,8 @@ let appointmentRooms = false;
 let serviceCalendarIds: number[] = [];
 /** A screen shows a video (Plan.md 52). */
 let videoInUse = false;
+/** A slide shows the block "Personen" (Plan.md 112). */
+let peopleInUse = false;
 let catalog: AuthCatalog | null = null;
 /** Names of the wiki areas by id, to name what a device sees beyond its own (Plan.md 94 B). */
 let wikiNames = new Map<number, string>();
@@ -184,6 +191,14 @@ const demo = ref(false);
 const plan = ref<GroupSpec[] | null>(null);
 const planProblem = ref<string | null>(null);
 const createdGroupIds = ref<number[]>([]);
+/** The group "Infoscreen-People" of the block "Personen" (Plan.md 112), from the settings; null for installations from before. */
+const peopleGroupId = ref<number | null>(null);
+/** The person ids of the device accounts in that group, from the settings: the player leaves them out of the cards (schema 1.52). */
+const peopleDeviceIds = ref<number[]>([]);
+/** Whether this person may save the settings (module right on the category); `undefined` while unknown – then nothing is blocked. */
+const settingsWritable = ref<boolean | undefined>(undefined);
+/** A group „Infoscreen-People" that an interrupted retrofit left behind (Plan.md 112): active, not entered, seen by the device group. */
+const orphanPeopleId = ref<number | null>(null);
 /** The group rights of this account (Plan.md 63); `undefined` while unknown or unreadable – then nothing is greyed out. */
 const groupPermissions = ref<GroupPermissions | undefined>(undefined);
 /** The group types of the instance (Plan.md 71); `undefined` while unknown, `null` when they could not be loaded. */
@@ -229,11 +244,11 @@ const wikiCategoryIdKnown = ref(true);
 
 const foreignGroups = computed(() =>
     groups.value.filter(
-        (g) => Object.values(GROUP_NAMES).includes(g.name as never) && !createdGroupIds.value.includes(g.id),
+        (g) => Object.values(GROUP_NAMES).includes(g.name as never) && !createdGroupIds.value.includes(g.id) && g.id !== orphanPeopleId.value,
     ),
 );
 
-const NOT_MODULE: number[] = [AUTH.calendarView, AUTH.resourceView, AUTH.eventView, AUTH.wikiView, AUTH.wikiCategoryView, AUTH.wikiCategoryEdit];
+const NOT_MODULE: number[] = [AUTH.calendarView, AUTH.resourceView, AUTH.eventView, AUTH.wikiView, AUTH.wikiCategoryView, AUTH.wikiCategoryEdit, AUTH.groupWithMembersView, AUTH.memberFieldsView];
 
 /** Rights a side must not hold – what the assistant takes back (Plan.md, F). */
 function forbiddenRights(side: Side): RequiredRight[] | null {
@@ -269,20 +284,27 @@ function computePlan(): void {
         return;
     }
     try {
-        plan.value = planProvisioning({
-            catalog,
-            moduleKey: EXTENSION_KEY,
-            categories: categories as Record<CategoryKey, number> & { status?: number; drafts?: number; changelog?: number },
-            wikiCategoryId,
-            roomIds: rooms.map((r) => r.id),
-            usedRoomIds,
-            appointmentRooms,
-            serviceCalendarIds: grantableCalendars(serviceCalendarIds),
-            screenCalendarIds: releasedCalendars.value,
-        });
+        plan.value = planProvisioning(planInput());
     } catch (e) {
         planProblem.value = explain(e);
     }
+}
+
+/** What the plan is made from; `people` overrides the group's state – the retrofit plans it as new next to existing groups. */
+function planInput(people?: 'new'): PlanInput {
+    return {
+        catalog: catalog!,
+        moduleKey: EXTENSION_KEY,
+        categories: categories as Record<CategoryKey, number> & { status?: number; drafts?: number; changelog?: number },
+        // Before the first run the group is about to be created; later it is the one the settings name – or none (installations from before).
+        peopleGroupId: people ?? (createdGroupIds.value.length === 0 ? 'new' : (peopleGroupId.value ?? undefined)),
+        wikiCategoryId,
+        roomIds: rooms.map((r) => r.id),
+        usedRoomIds,
+        appointmentRooms,
+        serviceCalendarIds: grantableCalendars(serviceCalendarIds),
+        screenCalendarIds: releasedCalendars.value,
+    };
 }
 
 /** Saves `changes` over the stored settings, read fresh – what they do not name stays (see `settingsToSave`). By default the assistant's fields. */
@@ -295,6 +317,8 @@ async function persistSettings(changes?: Partial<SettingsFields>): Promise<void>
             changes ?? {
                 designerGroupId: selected.designer ?? undefined,
                 deviceGroupId: selected.device ?? undefined,
+                peopleGroupId: peopleGroupId.value ?? undefined,
+                peopleDeviceIds: peopleGroupId.value === null ? undefined : peopleDeviceIds.value,
                 createdGroupIds: createdGroupIds.value.length ? createdGroupIds.value : undefined,
                 createdGroupTypeId: createdGroupIds.value.length ? (createdTypeId.value ?? undefined) : undefined,
                 createdWikiCategoryId: createdWikiCategoryId.value ?? undefined,
@@ -475,7 +499,7 @@ async function saveForm(): Promise<void> {
         formState.value = 'saved';
     } catch (e) {
         formState.value = 'idle';
-        error.value = explain(e);
+        error.value = explainSave(e);
         return;
     }
     if (rightsSignature() !== before) await askForRights();
@@ -526,7 +550,7 @@ onBeforeUnmount(() => {
 async function runAssistant(): Promise<void> {
     const groupTypeId = chosenTypeId.value;
     if (groupTypeId === null) return;
-    const question = t.setup.assistantRun.question(chosenTypeName.value, GROUP_NAMES.designer, GROUP_NAMES.device);
+    const question = t.setup.assistantRun.question(chosenTypeName.value, GROUP_NAMES.designer, GROUP_NAMES.device, GROUP_NAMES.people);
     if (!repository || !(await confirm({ message: question, confirmLabel: t.setup.groups.create }))) return;
     assistant.running = true;
     assistant.error = null;
@@ -554,15 +578,124 @@ async function runAssistant(): Promise<void> {
         createdTypeId.value = groupTypeId;
         selected.designer = result.groupIds.designer ?? selected.designer;
         selected.device = result.groupIds.device ?? selected.device;
+        peopleGroupId.value = result.groupIds.people ?? peopleGroupId.value;
+        if (result.deviceIds) peopleDeviceIds.value = result.deviceIds;
         // Saved even after a failure: what was created must stay removable.
         await persistSettings();
         groups.value = await loadGroups();
+        // The device's right on the people group names its id now.
+        computePlan();
         await Promise.all([check('designer'), check('device')]);
     } catch (e) {
         assistant.error = explain(e);
         assistant.log.push(t.setup.assistantRun.aborted(assistant.error));
     } finally {
         assistant.running = false;
+    }
+}
+
+/**
+ * „Gruppe nachrüsten" (Plan.md 112): an installation from before has the other two groups but not „Infoscreen-People".
+ * Asks first, with what happens; then creates only that group, gives its default role the member-field right, puts the
+ * devices in and gives the roles of the device group the right on the new group – nothing else is touched.
+ */
+async function addPeopleGroup(): Promise<void> {
+    const typeId = createdTypeId.value ?? chosenTypeId.value;
+    const deviceId = selected.device;
+    if (!repository || !catalog || typeId === null || deviceId === null) return;
+    let spec: GroupSpec[];
+    try {
+        spec = planProvisioning(planInput('new'));
+    } catch (e) {
+        assistant.error = explain(e);
+        return;
+    }
+    const people = spec.find((s) => s.key === 'people')!;
+    const seen = spec.find((s) => s.key === 'device')!.grants.filter((g) => g.dataGroup === 'people');
+    const lines = [
+        t.setup.addPeople.createGroup(GROUP_NAMES.people, typeName(typeId)),
+        ...(people.defaultRoleGrants ?? []).map((g) => t.setup.addPeople.grantDefault(g.label, GROUP_NAMES.people)),
+        ...seen.map((g) => t.setup.addPeople.grantDevice(g.label, groupName('device'))),
+        t.setup.addPeople.postsOff(GROUP_NAMES.people),
+        t.setup.addPeople.addDevices,
+    ];
+    const message = `${lines.join('\n')}\n\n${t.setup.addPeople.untouched}`;
+    if (!(await confirm({ title: t.setup.addPeople.title, message, confirmLabel: t.setup.addPeople.confirm }))) return;
+    assistant.running = true;
+    assistant.error = null;
+    assistant.log = [];
+    try {
+        await finishPeopleResult(await provisionPeople(spec, typeId, deviceId, churchToolsProvisionApi));
+    } catch (e) {
+        assistant.error = explain(e);
+        assistant.log.push(t.setup.assistantRun.aborted(assistant.error));
+    } finally {
+        assistant.running = false;
+    }
+}
+
+/** Takes over what `provisionPeople` or `completePeople` did: remembers the group and the devices, saves the settings, checks anew. */
+async function finishPeopleResult(result: Awaited<ReturnType<typeof provisionPeople>>): Promise<void> {
+    assistant.log = result.log;
+    assistant.error = result.error;
+    createdGroupIds.value = [...new Set([...createdGroupIds.value, ...Object.values(result.groupIds)])];
+    peopleGroupId.value = result.groupIds.people ?? peopleGroupId.value;
+    if (result.deviceIds) peopleDeviceIds.value = result.deviceIds;
+    try {
+        // Saved even after a failure: what was created must stay removable.
+        await persistSettings();
+        orphanPeopleId.value = null;
+    } catch (e) {
+        assistant.error = explainSave(e);
+    }
+    groups.value = await loadGroups();
+    computePlan();
+    await Promise.all([check('designer'), check('device')]);
+}
+
+/**
+ * „Einrichtung abschließen": a retrofit that stopped after the group and its rights were made (the settings could not be
+ * saved) left a group the page takes for a foreign one. Asks, then adopts it and adds what is missing.
+ */
+async function finishPeopleSetup(): Promise<void> {
+    const groupId = orphanPeopleId.value;
+    const deviceId = selected.device;
+    if (!repository || !catalog || groupId === null || deviceId === null) return;
+    let spec: GroupSpec[];
+    try {
+        spec = planProvisioning(planInput('new'));
+    } catch (e) {
+        assistant.error = explain(e);
+        return;
+    }
+    const name = groups.value.find((g) => g.id === groupId)?.name ?? GROUP_NAMES.people;
+    const message = `${t.setup.addPeople.finishAdopt(name)}\n${t.setup.addPeople.postsOff(name)}\n${t.setup.addPeople.finishMissing}\n\n${t.setup.addPeople.untouched}`;
+    if (!(await confirm({ title: t.setup.addPeople.finishTitle, message, confirmLabel: t.setup.addPeople.finishConfirm }))) return;
+    assistant.running = true;
+    assistant.error = null;
+    assistant.log = [];
+    try {
+        await finishPeopleResult(await completePeople(spec, groupId, deviceId, churchToolsProvisionApi));
+    } catch (e) {
+        assistant.error = explain(e);
+    } finally {
+        assistant.running = false;
+    }
+}
+
+/**
+ * Whether a group „Infoscreen-People" that is not entered belongs to an interrupted retrofit: exactly one such group, active,
+ * and the device group holds the right to see it (1104). Anything else stays foreign and untouched.
+ */
+async function findOrphanPeople(): Promise<void> {
+    orphanPeopleId.value = null;
+    if (demo.value || peopleGroupId.value !== null || selected.device === null || !createdGroupIds.value.includes(selected.device)) return;
+    if (!groups.value.some((g) => g.name === GROUP_NAMES.people && !createdGroupIds.value.includes(g.id))) return;
+    try {
+        const rights = await loadGroupRights(selected.device);
+        orphanPeopleId.value = orphanPeopleGroup(groups.value, createdGroupIds.value, rights.roles.map((r) => r.grants));
+    } catch {
+        // Not readable: the group stays foreign, as before.
     }
 }
 
@@ -579,6 +712,7 @@ async function updateRights(): Promise<void> {
     const groupIds = {
         designer: createdGroupIds.value.includes(selected.designer ?? -1) ? selected.designer! : undefined,
         device: createdGroupIds.value.includes(selected.device ?? -1) ? selected.device! : undefined,
+        people: createdGroupIds.value.includes(peopleGroupId.value ?? -1) ? peopleGroupId.value! : undefined,
     };
     assistant.running = true;
     assistant.error = null;
@@ -588,7 +722,7 @@ async function updateRights(): Promise<void> {
             calendars: new Map(calendars.map((c) => [c.id, c.name] as const)),
             rooms: new Map(rooms.map((r) => [r.id, r.name] as const)),
         };
-        const state = await readRefresh(plan.value, groupIds, known, names, churchToolsProvisionApi);
+        const state = await readRefresh(plan.value, groupIds, known, names, churchToolsProvisionApi, peopleDeviceIds.value);
         if (refreshIsEmpty(state.groups)) {
             assistant.log = state.groups.map(refreshLogLine);
             return;
@@ -613,6 +747,12 @@ async function confirmRefresh(): Promise<void> {
         const result = await applyRefresh(plan.value, open.state, churchToolsProvisionApi);
         assistant.log = result.log;
         assistant.error = result.error;
+        if (result.deviceIds && peopleGroupId.value !== null) {
+            peopleDeviceIds.value = result.deviceIds;
+            await persistSettings().catch((e: unknown) => assistant.log.push(t.setup.assistantRun.aborted(explain(e))));
+        }
+        // Posts may have been switched off: the check reads them from the list of groups.
+        groups.value = await loadGroups();
         await Promise.all([check('designer'), check('device')]);
     } finally {
         assistant.running = false;
@@ -734,6 +874,8 @@ async function confirmRemoveSetup(): Promise<void> {
         createdGroupIds.value = result.remaining;
         selected.designer = result.selected.designer ?? null;
         selected.device = result.selected.device ?? null;
+        if (peopleGroupId.value !== null && result.removed.includes(peopleGroupId.value)) peopleGroupId.value = null;
+        computePlan();
         // Runs before the save below, but cannot block it: it only ever
         // pushes a log line, never throws (Plan.md, F).
         if (result.error === null) {
@@ -757,6 +899,12 @@ async function confirmRemoveSetup(): Promise<void> {
     }
 }
 
+/** A failed save of the settings: 401 and 403 name the missing module right instead of the bare status. */
+function explainSave(e: unknown): string {
+    const status = httpStatus(e);
+    return status === 401 || status === 403 ? t.setup.settingsNotSaved401 : explain(e);
+}
+
 function explain(e: unknown): string {
     if (httpStatus(e) === 403) {
         return t.setup.rightsOfOthers;
@@ -774,6 +922,16 @@ function dataName(authId: number, dataId: number): string | undefined {
     if (dataId === categories.changelog) return CHANGELOG_CATEGORY.name;
     const key = (Object.keys(CATEGORIES) as CategoryKey[]).find((k) => categories[k] === dataId);
     return key && CATEGORIES[key].name;
+}
+
+/**
+ * Whether posts are switched off in a group the assistant made and keeps them off in (the devices and the people, Plan.md 112);
+ * `undefined` for any other group – its posts rights count – and where the list did not say.
+ */
+function postsDisabledIn(groupId: number): boolean | undefined {
+    if (!createdGroupIds.value.includes(groupId) || (groupId !== peopleGroupId.value && groupId !== selected.device)) return undefined;
+    const enabled = groups.value.find((g) => g.id === groupId)?.postsEnabled;
+    return typeof enabled === 'boolean' ? !enabled : undefined;
 }
 
 async function check(side: Side): Promise<void> {
@@ -809,7 +967,9 @@ async function check(side: Side): Promise<void> {
                         memberships === null && origins === null
                             ? null
                             : [...names].map(([id, name]) => ({
+                                  id,
                                   name,
+                                  postsDisabled: postsDisabledIn(id),
                                   grants: origins
                                       ? origins.filter((o) => o.groupId === id).flatMap((o) => (o.dataIds ?? [null]).map((dataId) => ({ authId: o.authId, dataId })))
                                       : null,
@@ -830,10 +990,19 @@ async function check(side: Side): Promise<void> {
                 serviceCalendarIds,
                 screenCalendarIds: releasedCalendars.value,
                 videoInUse,
+                peopleGroup: peopleGroupId.value === null ? undefined : { id: peopleGroupId.value, name: groups.value.find((g) => g.id === peopleGroupId.value)?.name ?? GROUP_NAMES.people },
+                peopleInUse,
+                devicePostsDisabled: postsDisabledIn(groupId),
                 wikiCategoryId,
                 moduleRights: moduleRights('device'),
-                // Only with the catalogue: without the plan nobody knows what a device needs (Plan.md 58 E).
-                plannedAuthIds: plan.value?.find((spec) => spec.key === 'device')?.grants.map((g) => g.authId),
+                // Only with the catalogue: without the plan nobody knows what a device needs (Plan.md 58 E). The member fields
+                // (10126) are read within the people group, whose role the device sits in – wanted as well (Plan.md 112).
+                plannedAuthIds: plan.value
+                    ? [
+                          ...(plan.value.find((spec) => spec.key === 'device')?.grants.map((g) => g.authId) ?? []),
+                          ...(plan.value.find((spec) => spec.key === 'people')?.defaultRoleGrants?.map((g) => g.authId) ?? []),
+                      ]
+                    : undefined,
                 plannedGrants: plan.value?.find((spec) => spec.key === 'device')?.grants,
                 dataName,
                 authName: (authId) => catalog?.name(authId),
@@ -884,7 +1053,7 @@ onMounted(async () => {
         if (page.value === 'services') void loadServices();
         // The device check names a missing room type: it waits for this read below.
         const roomTypesRead = loadRoomTypes();
-        const [list, settings, wikiCategories, calendarList, publicCalendars, used, screenList, resources, usedRooms, roomsAtAppointments, serviceCalendars, videos, permissions, types] = await Promise.all([
+        const [list, settings, wikiCategories, calendarList, publicCalendars, used, screenList, resources, usedRooms, roomsAtAppointments, serviceCalendars, videos, people, permissions, types] = await Promise.all([
             loadGroups(),
             repository.loadSettings(),
             churchtoolsClient.get<WikiCategory[]>('/wiki/categories'),
@@ -897,6 +1066,7 @@ onMounted(async () => {
             repository.appointmentRoomsInUse(),
             repository.serviceCalendarIdsInUse(),
             repository.videoInUse(),
+            repository.peopleInUse(),
             loadGroupPermissions(),
             loadGroupTypes().catch(() => null),
         ]);
@@ -926,8 +1096,11 @@ onMounted(async () => {
         appointmentRooms = roomsAtAppointments;
         serviceCalendarIds = serviceCalendars;
         videoInUse = videos;
+        peopleInUse = people;
         selected.designer = settings?.designerGroupId ?? null;
         selected.device = settings?.deviceGroupId ?? null;
+        peopleGroupId.value = settings?.peopleGroupId ?? null;
+        peopleDeviceIds.value = settings?.peopleDeviceIds ?? [];
         Object.assign(savedGroups, selected);
         createdGroupIds.value = settings?.createdGroupIds ?? [];
         // Known from the settings read above; `loadServices` reads them again before the list can change anything.
@@ -958,6 +1131,15 @@ onMounted(async () => {
         computePlan();
         await roomTypesRead;
         await Promise.all([check('designer'), check('device')]);
+        if (!demo.value) {
+            await findOrphanPeople();
+            await churchtoolsClient
+                .get<Record<string, unknown>>('/permissions/global')
+                .then((global) => {
+                    settingsWritable.value = maySaveSettings(global[EXTENSION_KEY] as Partial<ModulePermissions> | undefined, categories.settings);
+                })
+                .catch(() => undefined);
+        }
     } catch (e) {
         error.value = explain(e);
     }
@@ -1149,6 +1331,31 @@ const SIDES: { side: Side; title: string; purpose: string }[] = [
                         <h2>{{ t.setup.groups.assistant }}</h2>
                         <template v-if="createdGroupIds.length">
                             <p>{{ t.setup.groups.done(groupName('designer'), groupName('device')) }}</p>
+                            <p v-if="peopleGroupId !== null" data-testid="people-group-hint">{{ t.setup.groups.donePeople(groups.find((g) => g.id === peopleGroupId)?.name ?? GROUP_NAMES.people) }}</p>
+                            <template v-if="peopleGroupId === null && orphanPeopleId !== null && !demo">
+                                <p class="muted" data-testid="people-orphan">{{ t.setup.addPeople.finishHint }}</p>
+                                <div class="actions">
+                                    <button class="d-btn" type="button" :disabled="assistant.running || settingsWritable === false" data-testid="finish-people-group" @click="finishPeopleSetup">
+                                        {{ t.setup.addPeople.finishButton }}
+                                    </button>
+                                </div>
+                                <p v-if="settingsWritable === false" class="muted small" data-testid="people-no-settings-right">{{ t.setup.addPeople.noSettingsRight }}</p>
+                            </template>
+                            <template v-else-if="peopleGroupId === null && !demo">
+                                <p class="muted" data-testid="people-missing">{{ t.setup.addPeople.missing }}</p>
+                                <div class="actions">
+                                    <button
+                                        class="d-btn"
+                                        type="button"
+                                        :disabled="!assistant.allowed || settingsWritable === false || !catalog || assistant.running || selected.device === null || !createdGroupIds.includes(selected.device) || foreignGroups.length > 0 || (createdTypeId ?? chosenTypeId) === null || !abilities.create.allowed"
+                                        data-testid="add-people-group"
+                                        @click="addPeopleGroup"
+                                    >
+                                        {{ t.setup.addPeople.button }}
+                                    </button>
+                                </div>
+                                <p v-if="settingsWritable === false" class="muted small" data-testid="people-no-settings-right">{{ t.setup.addPeople.noSettingsRight }}</p>
+                            </template>
                             <p class="muted small">{{ t.setup.groups.doneHint }}</p>
                             <div class="actions">
                                 <button

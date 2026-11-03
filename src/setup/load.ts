@@ -15,12 +15,15 @@ export interface GroupSummary {
     id: number;
     name: string;
     statusId: number | null;
+    /** `settings.postsEnabled`; null where the list does not say. */
+    postsEnabled: boolean | null;
 }
 
 interface GroupResponse {
     id: number;
     name: string;
     information?: { groupStatusId?: number | null } | null;
+    settings?: { postsEnabled?: boolean | null } | null;
 }
 
 interface RoleResponse {
@@ -43,7 +46,7 @@ interface PersonResponse {
     statusId: number;
 }
 
-const summary = (g: GroupResponse): GroupSummary => ({ id: g.id, name: g.name, statusId: g.information?.groupStatusId ?? null });
+const summary = (g: GroupResponse): GroupSummary => ({ id: g.id, name: g.name, statusId: g.information?.groupStatusId ?? null, postsEnabled: g.settings?.postsEnabled ?? null });
 
 export async function loadGroups(): Promise<GroupSummary[]> {
     const groups = await churchtoolsClient.getAllPages<GroupResponse>('/groups');
@@ -243,6 +246,27 @@ export const churchToolsProvisionApi: ProvisionApi = {
     },
     grants(roleId) {
         return permissions('group_role', roleId);
+    },
+    async postsEnabled(groupId) {
+        const group = await churchtoolsClient.get<GroupResponse>(`/groups/${groupId}`);
+        return group.settings?.postsEnabled !== false;
+    },
+    async setPostsEnabled(groupId, enabled) {
+        // At the group itself, not under `settings`: that answers 200 and ignores the value (G71, 2026-11-02).
+        await churchtoolsClient.patch(`/groups/${groupId}`, { postsEnabled: enabled });
+    },
+    async defaultRole(groupId) {
+        const roles = await churchtoolsClient.get<RoleResponse[]>(`/groups/${groupId}/roles`);
+        const role = roles.find((r) => r.isDefault);
+        return role ? { roleId: role.id, groupTypeRoleId: role.groupTypeRoleId } : null;
+    },
+    async memberIds(groupId) {
+        const members = await churchtoolsClient.getAllPages<MemberResponse>(`/groups/${groupId}/members`);
+        return members.filter((m) => (m.groupMemberStatus ?? 'active') === 'active').map((m) => m.personId);
+    },
+    async addMember(groupId, personId, groupTypeRoleId) {
+        // Measured in G34/G70: PUT adds, with the role and the status.
+        await churchtoolsClient.put(`/groups/${groupId}/members/${personId}`, { groupTypeRoleId, groupMemberStatus: 'active' });
     },
     async revoke(roleId, authId, dataId) {
         // Spec: DELETE removes the raw assignment named by authId and dataId (Build 32882). Measured with G34's follow-up.

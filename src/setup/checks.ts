@@ -24,7 +24,19 @@ export const AUTH = {
     wikiCategoryEdit: 503, // churchwiki: "Einzelne Wiki-Kategorien bearbeiten"
     // The person status of a fresh instance gives it to everyone, the device account too (measured 2026-10-02, status 0).
     ownDataView: 131, // churchdb: "Eigene Personendaten sehen - bis zum gewählten Sicherheitslevel"
+    // The people block (Plan.md 112, G70, G71): the device sees one group with its members, and the member fields up to a level.
+    groupWithMembersView: 1104, // churchgroup: "Gruppe inkl. ihrer Gruppenmitglieder sehen" – global, per group
+    memberFieldsView: 10126, // churchgroup, group internal: "Gruppenmitgliedsfelder sehen" – up to a security level
+    // Both give the e-mail address of a person already at level 1 (G70, G71): a device must never hold them.
+    personDataView: 125, // churchdb: "Personendaten sehen"
+    groupMembersViewIntern: 10101, // churchgroup, group internal: "Gruppenmitglieder sehen"
 } as const;
+
+/** The two rights that open a person's e-mail address to whoever holds them – the device group is checked for them. */
+/** The posts rights a group of the type „Merkmal" gives its roles: `+create post group intern` and `+create post group visible` (G61). */
+export const POST_AUTH_IDS: readonly number[] = [10130, 10131];
+
+export const PERSON_DATA_AUTH_IDS: readonly number[] = [AUTH.personDataView, AUTH.groupMembersViewIntern];
 
 /** `dataId` of a right granted for all data, e.g. all calendars – seen on person rights (G30). */
 export const ALL_DATA = -1;
@@ -41,7 +53,7 @@ export interface Grant {
 export type Level = 'ok' | 'warn' | 'fail' | 'info';
 
 /** What a check is about; the setup page folds its checks by it. A check without one counts as `group`. */
-export type CheckCategory = 'group' | 'calendars' | 'rooms' | 'services' | 'module' | 'media' | 'rights';
+export type CheckCategory = 'group' | 'calendars' | 'rooms' | 'services' | 'people' | 'module' | 'media' | 'rights';
 
 export interface Check {
     level: Level;
@@ -198,6 +210,10 @@ export function checkDesignerGroup(input: DesignerGroupInput): Check[] {
 }
 
 export interface OtherGroup {
+    /** One of the assistant's groups: whether posts are switched off in it (Plan.md 112). Missing: not its group – its posts rights count. */
+    postsDisabled?: boolean;
+    /** The group's id – to tell whether the device is a member of the people group. */
+    id?: number;
     name: string;
     /** Rights this group gives the account, global and group internal, one grant per data id; null: they could not be read. */
     grants: Grant[] | null;
@@ -237,6 +253,12 @@ export interface DeviceGroupInput {
     /** A screen shows a video (Plan.md 52): the device must see the wiki category, else the video does not run. */
     videoInUse?: boolean;
     wikiCategoryId: number | null;
+    /** The people group of the block "Personen" (Plan.md 112), if the assistant set it up; the device must see it and sit in it. */
+    peopleGroup?: { id: number; name: string };
+    /** A block "Personen" is in use: a device that cannot read the group makes the block empty – a failure, not a hint. */
+    peopleInUse?: boolean;
+    /** The device group is the assistant's own: whether posts are switched off in it. Missing: not its group. */
+    devicePostsDisabled?: boolean;
     moduleRights?: ModuleRights;
     /**
      * The rights the assistant plans for a device, by id (Plan.md 58 E). With them the check names what a
@@ -263,7 +285,8 @@ const EXCESS_NAMED = 6;
  * from status or group is no excess right either: if it reads a calendar that is not public, its own line warns.
  */
 export function excessRights(grants: Grant[], plannedAuthIds: readonly number[]): number[] {
-    const planned = new Set<number>([...plannedAuthIds, AUTH.wikiView, AUTH.wikiCategoryEdit, AUTH.ownDataView, AUTH.calendarView]);
+    // The rights that open the e-mail address have a line of their own, with the reason (Plan.md 112).
+    const planned = new Set<number>([...plannedAuthIds, ...PERSON_DATA_AUTH_IDS, AUTH.wikiView, AUTH.wikiCategoryEdit, AUTH.ownDataView, AUTH.calendarView]);
     const held = [...new Set(grants.map((g) => g.authId))].filter((authId) => has(grants, authId));
     return held.filter((authId) => !planned.has(authId)).sort((a, b) => a - b);
 }
@@ -360,16 +383,19 @@ export function checkDeviceGroup(input: DeviceGroupInput): Check[] {
                 });
                 continue;
             }
-            const rights = input.plannedAuthIds
+            const held = input.plannedAuthIds
                 ? excessRights(group.grants, input.plannedAuthIds)
                 : [...new Set(group.grants.map((g) => g.authId))].sort((a, b) => a - b);
+            // The posts rights of the assistant's own groups do nothing while posts are off there; while they are on, "Rechte aktualisieren" fixes it.
+            const rights = group.postsDisabled ? held.filter((id) => !POST_AUTH_IDS.includes(id)) : held;
             if (!rights.length) continue;
+            const postsOn = group.postsDisabled === false && rights.some((id) => POST_AUTH_IDS.includes(id));
             const names = rights.slice(0, EXCESS_NAMED).map((id) => input.authName?.(id) ?? t.setup.checks.excessFallback(id));
             checks.push({
                 level: 'warn',
                 category: 'rights',
                 text: t.setup.checks.otherGroupRights(m.label, `„${group.name}"`, rights.length, names.join(', '), rights.length - names.length),
-                detail: t.setup.checks.otherGroupRightsDetail,
+                detail: postsOn ? `${t.setup.checks.otherGroupRightsDetail} ${t.setup.checks.postsOnDetail}` : t.setup.checks.otherGroupRightsDetail,
             });
         }
     }
@@ -457,6 +483,47 @@ export function checkDeviceGroup(input: DeviceGroupInput): Check[] {
         }
     }
 
+    // The people group (Plan.md 112, G70): seen through 1104 on this group, the member fields only as a member of it.
+    if (input.peopleGroup) {
+        const { id, name } = input.peopleGroup;
+        const inUse = input.peopleInUse === true;
+        const blind = input.members.filter((m) => !has(m.grants, AUTH.groupWithMembersView, id)).map((m) => m.label);
+        if (blind.length) {
+            checks.push({
+                level: inUse ? 'fail' : 'warn',
+                category: 'people',
+                text: t.setup.checks.peopleBlind(blind.join(', '), name, inUse),
+                detail: t.setup.checks.peopleBlindDetail,
+            });
+        } else {
+            checks.push({ level: 'ok', category: 'people', text: t.setup.checks.peopleVisible(name) });
+        }
+        // Only where the groups of the device are known (`otherGroups` read): a read that failed says nothing about membership.
+        const outside = input.members
+            .filter((m) => m.otherGroups && !m.otherGroups.some((g) => g.id === id))
+            .map((m) => m.label);
+        if (outside.length) {
+            checks.push({
+                level: 'warn',
+                category: 'people',
+                text: t.setup.checks.peopleNotMember(outside.join(', '), name),
+                detail: t.setup.checks.peopleNotMemberDetail,
+            });
+        }
+    }
+
+    // Personendaten (125) and group members (10101) give a person's e-mail address at the first level (G70, G71).
+    for (const member of input.members) {
+        if (PERSON_DATA_AUTH_IDS.some((authId) => has(holdings.get(member)!, authId))) {
+            checks.push({
+                level: 'warn',
+                category: 'rights',
+                text: t.setup.checks.personData(member.label),
+                detail: t.setup.checks.personDataDetail,
+            });
+        }
+    }
+
     // Videos come through the download address, which wants "Wiki-Bereich sehen" (502) and nothing more (G47, Plan.md 52).
     if (input.wikiCategoryId !== null) {
         const wiki = input.wikiCategoryId;
@@ -506,15 +573,18 @@ export function checkDeviceGroup(input: DeviceGroupInput): Check[] {
 
     if (input.plannedAuthIds) {
         for (const member of input.members) {
-            const excess = excessRights(member.grants, input.plannedAuthIds);
+            // The posts rights come from the device group's own role (they are group-internal, no status or person holds them).
+            const held = excessRights(member.grants, input.plannedAuthIds);
+            const excess = input.devicePostsDisabled ? held.filter((id) => !POST_AUTH_IDS.includes(id)) : held;
             if (!excess.length) continue;
+            const postsOn = input.devicePostsDisabled === false && excess.some((id) => POST_AUTH_IDS.includes(id));
             const names = excess.slice(0, EXCESS_NAMED).map((id) => input.authName?.(id) ?? t.setup.checks.excessFallback(id));
             const more = excess.length - names.length;
             checks.push({
                 level: 'warn',
                 category: 'rights',
                 text: t.setup.checks.excess(member.label, excess.length, names.join(', '), more),
-                detail: t.setup.checks.excessDetail,
+                detail: postsOn ? `${t.setup.checks.excessDetail} ${t.setup.checks.postsOnDetail}` : t.setup.checks.excessDetail,
             });
         }
     }
@@ -522,7 +592,7 @@ export function checkDeviceGroup(input: DeviceGroupInput): Check[] {
 }
 
 const CATEGORIES: { category: CheckCategory; title: string }[] = (
-    ['group', 'calendars', 'rooms', 'services', 'module', 'media', 'rights'] as const
+    ['group', 'calendars', 'rooms', 'services', 'people', 'module', 'media', 'rights'] as const
 ).map((category) => ({ category, title: t.setup.checks.categories[category] }));
 
 const SEVERITY: Record<Level, number> = { ok: 0, info: 1, warn: 2, fail: 3 };

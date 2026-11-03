@@ -4,6 +4,31 @@ Alle nennenswerten Änderungen am Infoscreen Designer. Aufbau nach [Keep a Chang
 Versionen nach [Semantic Versioning](https://semver.org/lang/de/). Wie eine Version entsteht, steht in
 [`LocalTests.md`](LocalTests.md) unter „Release veröffentlichen".
 
+## [0.50.0] – 2026-11-02
+
+Danke an Bernhard ([@bwl21](https://github.com/bwl21)) für den Wunsch, Ansprechpartner als Karten auf dem Bildschirm zu
+zeigen – und für seine Antworten, die den Zuschnitt bestimmt haben.
+
+### Hinzugefügt
+
+- **Neuer Baustein „Personen“.** Er zeigt die Mitglieder der Gruppe „Infoscreen-People“ als Karten mit Name, Bild und
+  Angaben aus den Mitgliedsfeldern der Gruppe – etwa Funktion und Büro. Einstellbar sind die Rollen, die Angaben samt
+  Reihenfolge, die Sortierung (Nachname, Vorname, Rolle), Bild an oder aus und die Zahl der Karten je Seite; die
+  Karten blättern mit Fortschritt wie die anderen Listen. E-Mail-Adresse, Telefon und Anschrift zeigt der Baustein nie.
+- **Der Einrichtungsassistent legt dazu die Gruppe „Infoscreen-People“ an.** Wer dort Mitglied ist, darf auf den
+  Bildschirmen erscheinen. Die Geräte sehen genau diese Gruppe und ihre Mitgliedsfelder bis Sicherheitsstufe 1; der
+  Assistent nimmt die vorhandenen Gerätekonten in die Gruppe auf, „Rechte aktualisieren“ holt später hinzugekommene
+  nach. Die Konten der Geräte erscheinen nicht als Karten. Die Prüfung der Gerätegruppe kennt diese Rechte und warnt vor
+  „Personendaten sehen“ und „Gruppenmitglieder sehen“, die E-Mail-Adressen freigeben würden.
+- **Beiträge sind in den Gruppen der Geräte und der Personen abgeschaltet.** Dort brauchen sie nichts, und der Gruppentyp
+  gäbe den Gerätekonten sonst das Recht, Beiträge zu schreiben. Der Assistent schaltet sie ab (auch beim Nachrüsten),
+  „Rechte aktualisieren“ holt es bei älteren Einrichtungen nach; die Prüfung warnt vor den Beitragsrechten nur noch,
+  solange die Beiträge an sind.
+- **Bestehende Einrichtungen rüsten die Gruppe nach.** Unter Einstellungen → Gruppen und Rechte legt „Gruppe
+  „Infoscreen-People“ nachrüsten“ nach einer Vorschau nur diese Gruppe an; bestehende Rollen und Gruppen bleiben
+  unberührt (siehe [Einrichtung](docs/Einrichtung.md#personen-auf-den-bildschirmen)). „Rechte aktualisieren“ greift
+  jetzt auch, wenn nur ein neues Gerätekonto nachzutragen ist.
+
 ## [0.49.2] – 2026-10-28
 
 ### Geändert
@@ -1557,6 +1582,7 @@ Die erste Version: Infoscreens für die Fernseher der Gemeinde, gestaltet direkt
 - **Anleitungen** zur [Einrichtung](docs/Einrichtung.md), zum [Einstieg je Rolle](docs/Onboarding.md) – mit
   Bildern für neue Gestalter – und eine [Übersicht der Rechte](docs/Rechte.md).
 
+[0.50.0]: https://github.com/wirsindcgks/churchtools-infoscreen/releases/tag/v0.50.0
 [0.49.2]: https://github.com/wirsindcgks/churchtools-infoscreen/releases/tag/v0.49.2
 [0.49.1]: https://github.com/wirsindcgks/churchtools-infoscreen/releases/tag/v0.49.1
 [0.49.0]: https://github.com/wirsindcgks/churchtools-infoscreen/releases/tag/v0.49.0
