@@ -631,6 +631,24 @@ describe('the people group on the device check (Plan.md 112, G70, G71)', () => {
         expect(people(unknown).some((c) => c.text.includes('nicht Mitglied'))).toBe(false);
     });
 
+    it('checks each released group: seen (1104) is ok, not seen fails while a block uses it, no membership is only a hint (Stück 2a)', () => {
+        const released = [{ id: 51, name: 'Mitarbeiter' }];
+        const seen = checkDeviceGroup({ ...base, members: [device([grant(AUTH.groupWithMembersView, 51)], [])], releasedPeopleGroups: released, plannedAuthIds: planned });
+        expect(people(seen)).toEqual([
+            { level: 'ok', category: 'people', text: 'Die Geräte sehen die Gruppe „Mitarbeiter" mit ihren Mitgliedern.' },
+            expect.objectContaining({ level: 'info', category: 'people', text: expect.stringContaining('sieht in „Mitarbeiter" keine Mitgliedsfelder') }),
+        ]);
+        // The right read itself wins over membership: from a parent group without being a member (G72), or missing although a member.
+        const inherited = checkDeviceGroup({ ...base, members: [{ ...device([grant(AUTH.groupWithMembersView, 51)], []), memberFieldGroupIds: [51] }], releasedPeopleGroups: released, plannedAuthIds: planned });
+        expect(people(inherited).map((c) => c.level)).toEqual(['ok']);
+        const memberWithout = checkDeviceGroup({ ...base, members: [{ ...device([grant(AUTH.groupWithMembersView, 51)], [{ id: 51, name: 'Mitarbeiter', grants: [] }]), memberFieldGroupIds: [] }], releasedPeopleGroups: released, plannedAuthIds: planned });
+        expect(people(memberWithout).map((c) => c.level)).toEqual(['ok', 'info']);
+        const blind = checkDeviceGroup({ ...base, members: [device([], null)], releasedPeopleGroups: released, peopleInUse: true, plannedAuthIds: planned });
+        expect(people(blind)).toEqual([expect.objectContaining({ level: 'fail', text: expect.stringContaining('sieht die Gruppe „Mitarbeiter" nicht') })]);
+        const member = checkDeviceGroup({ ...base, members: [device([grant(AUTH.groupWithMembersView, 51)], [{ id: 51, name: 'Mitarbeiter', grants: [] }])], releasedPeopleGroups: released, plannedAuthIds: planned });
+        expect(people(member).map((c) => c.level)).toEqual(['ok']);
+    });
+
     it.each([AUTH.personDataView, AUTH.groupMembersViewIntern])('warns of %i at the device – it opens the e-mail address, from its own role or a group it sits in', (authId) => {
         const own = checkDeviceGroup({ ...base, members: [device([grant(authId)])], plannedAuthIds: planned });
         const viaGroup = checkDeviceGroup({ ...base, members: [device([], [{ name: 'Andere', grants: [grant(authId)] }])], plannedAuthIds: planned });
