@@ -1687,7 +1687,7 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             privacy:
                 'Hier gibst du frei, welche Angaben aus dem Personenprofil der Baustein „Personen“ zeigen darf. ChurchTools gibt sie dem Gerät aber nur als ganze Sicherheitsstufe: Technisch kann das Gerät alle Felder bis zu seiner Stufe lesen, auch E-Mail, Telefon und Geburtsdatum der Personen in den freigegebenen Gruppen und in „Infoscreen-People“. Das kann auch jeder lesen, der die Adresse eines Fernsehers kennt. Der Baustein zeigt nur die Felder, die du hier ankreuzt.',
             privacyAsk: 'Stimmt die Freigabe vorher mit der Gemeindeleitung ab – und mit den Personen, deren Angaben erscheinen.',
-            lead: 'Welche Personenfelder Gestalter im Baustein „Personen“ wählen können. Angeboten werden Felder, die in ChurchTools aktiv sind und in einer Sicherheitsstufe liegen, die die Geräte sehen. Die Stufe gibt ein Administrator in ChurchTools mit „Personendaten sehen“ an der Gerätegruppe; der Infoscreen vergibt sie nicht selbst.',
+            lead: 'Welche Personenfelder Gestalter im Baustein „Personen“ wählen können. Angeboten werden Felder, die in ChurchTools aktiv sind und in einer Sicherheitsstufe liegen, die die Geräte sehen. Die Stufe gibt ein Administrator in ChurchTools: „Personendaten sehen“ an der Gerätegruppe oder „Gruppenmitglieder sehen“ an der Rolle des Gerätekontos in jeder gezeigten Gruppe; der Infoscreen vergibt sie nicht selbst.',
             detail:
                 'Die Stufen bauen aufeinander auf: Wer eine Stufe sieht, sieht die darunter mit. Ändert eine Gemeinde in ChurchTools die Sicherheitsstufe eines Feldes, ändert sich, was das Gerät lesen kann. Das Geburtsdatum zeigt der Baustein nur als Tag und Monat, nie mit dem Jahr.',
             failed: 'Die Personenfelder konnten nicht geladen werden. Eine bestehende Freischaltung lässt sich trotzdem zurücknehmen.',
@@ -1695,9 +1695,9 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             level: (name: string) => `Sicherheitsstufe „${name}“`,
             outOfReach: (name: string) => `Sicherheitsstufe „${name}“ – sehen die Geräte nicht`,
             levelUnknown: 'Sicherheitsstufe unbekannt',
-            reach: (name: string) => `Die Geräte sehen Personendaten bis „${name}“.`,
+            reach: (name: string) => `Die Geräte sehen Personendaten in allen gezeigten Gruppen bis „${name}“.`,
             reachNone:
-                'Die Geräte dürfen keine Personendaten sehen. Damit Felder angeboten werden, gib der Gerätegruppe in ChurchTools „Personendaten sehen“ auf der niedrigsten Sicherheitsstufe, in der die gewünschten Felder liegen.',
+                'Die Geräte sehen nicht in jeder gezeigten Gruppe Personendaten. Damit Felder angeboten werden, gib in ChurchTools auf der niedrigsten Sicherheitsstufe, in der die gewünschten Felder liegen, der Gerätegruppe „Personendaten sehen“ – oder der Rolle des Gerätekontos in jeder gezeigten Gruppe „Gruppenmitglieder sehen“ (gilt nur für deren Mitglieder).',
             reachUnknown: 'Welche Sicherheitsstufe die Geräte sehen, ist noch nicht bekannt.',
             confirm: (names: string, level: string) =>
                 `Wirklich freischalten: ${names}?\n\nDas Gerät darf „Personendaten sehen“ bis „${level}“ und kann damit alle Felder bis zu dieser Stufe lesen – auch E-Mail, Telefon und Geburtsdatum. Wer die Adresse eines Fernsehers kennt, kann das ebenfalls. Der Baustein zeigt nur die angekreuzten Felder.`,
@@ -1953,14 +1953,22 @@ Damit er im Wiki nicht stört, lässt er sich in den Einstellungen des Designers
             peopleNotMemberDetail: 'Mitgliedsfelder sieht ein Gerät nur als Mitglied der Gruppe. Das Gerätekonto dort aufnehmen oder „Rechte aktualisieren" – das nimmt alle Geräte der Gerätegruppe auf.',
             personData: (labels: string) => `${labels} darf Personendaten sehen – damit auch E-Mail-Adressen.`,
             personDataDetail:
-                'Die Rechte „Personendaten sehen" und „Gruppenmitglieder sehen" geben schon in der ersten Sicherheitsstufe die E-Mail-Adresse frei, und wer die Adresse eines Fernsehers kennt, liest sie mit. Für den Baustein „Personen" sind sie nicht nötig – wegnehmen.',
+                'Das Recht „Personendaten sehen“ gibt schon in der ersten Sicherheitsstufe die E-Mail-Adresse frei, und wer die Adresse eines Fernsehers kennt, liest sie mit. Dasselbe gilt für „Gruppenmitglieder sehen“ in einer gezeigten Gruppe, dort für deren Mitglieder. Für den Baustein „Personen“ sind sie nur nötig, wenn Personenfelder freigeschaltet sind – sonst wegnehmen.',
+            personDataGroups: (labels: string, groups: string[]) =>
+                `${labels} darf in ${groups.map((g) => `„${g}“`).join(', ')} die Gruppenmitglieder sehen – damit auch E-Mail-Adressen, obwohl kein Bildschirm diese Gruppe zeigt.`,
+            personDataGroupsDetail:
+                'Das gruppeninterne Recht „Gruppenmitglieder sehen“ gibt schon in der ersten Sicherheitsstufe die E-Mail-Adresse der Mitglieder frei, und wer die Adresse eines Fernsehers kennt, liest sie mit. Nur in einer Gruppe, die ein Bildschirm zeigt, ist es ein Weg zu Personenfeldern. Hier in der Rechteverwaltung wegnehmen oder die Gruppe unter „Gruppen für Personen“ freigeben.',
+            groupMembersMissingLevel: (label: string, group: string, id: number) =>
+                `${label} hat „Gruppenmitglieder sehen“ in „${group}“ für eine Sicherheitsstufe, die es nicht gibt (ID ${id}).`,
+            groupMembersMissingLevelDetail:
+                'ChurchTools nimmt ein solches Recht ohne Fehlermeldung an. Es zeigt auf keine Stufe und öffnet keine Personenfelder – in der Rechteverwaltung an der Rolle entfernen und, wenn Personenfelder gezeigt werden sollen, die passende Stufe geben.',
             // Released person fields (Plan.md 112, Stück 3): 125 is set by the administrator; the check reads how far a device sees (G73).
             personFieldsReleased: (names: string) => `Personenfelder freigeschaltet: ${names}.`,
             personFieldsReleasedDetail:
-                'Das Gerät darf „Personendaten sehen“ bis zu der Stufe, die ihm in ChurchTools gegeben ist. Technisch kann es damit alle Felder bis zu dieser Stufe lesen – auch E-Mail, Telefon und Geburtsdatum –, und mit der Adresse eines Fernsehers kann das auch jeder andere. Der Baustein „Personen“ zeigt nur die freigeschalteten.',
+                'Das Gerät darf Personendaten bis zu der Stufe sehen, die ihm in ChurchTools gegeben ist – mit „Personendaten sehen“ oder, in der gezeigten Gruppe, mit „Gruppenmitglieder sehen“ (dann nur für deren Mitglieder). Technisch kann es damit alle Felder bis zu dieser Stufe lesen – auch E-Mail, Telefon und Geburtsdatum –, und mit der Adresse eines Fernsehers kann das auch jeder andere. Der Baustein „Personen“ zeigt nur die freigeschalteten.',
             personFieldsBlind: (labels: string) => `${labels} darf keine Personendaten sehen – die freigeschalteten Personenfelder bleiben leer.`,
             personFieldsBlindDetail:
-                'Es fehlt „Personendaten sehen“. Der Infoscreen vergibt es nicht selbst: in ChurchTools der Gerätegruppe das Recht auf der Sicherheitsstufe der Felder geben.',
+                'Es fehlt „Personendaten sehen“ oder, für die gezeigten Gruppen, „Gruppenmitglieder sehen“ (dieses gilt nur für deren Mitglieder und in jeder gezeigten Gruppe). Der Infoscreen vergibt beides nicht selbst: in ChurchTools der Gerätegruppe das Recht auf der Sicherheitsstufe der Felder geben.',
             personDataMissingLevel: (labels: string, ids: number[]) =>
                 `${labels} hat „Personendaten sehen“ für eine Sicherheitsstufe, die es nicht gibt (ID ${ids.join(', ')}).`,
             personDataMissingLevelDetail:
